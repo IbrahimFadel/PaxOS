@@ -11,4 +11,5 @@ char* strrev(char* str) {
     end--;
     start++;
   }
+  return str;
 }
