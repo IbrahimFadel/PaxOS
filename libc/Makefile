@@ -7,6 +7,9 @@ CPPFLAGS?=
 LDFLAGS?=
 LIBS?=
 
+AS:=nasm
+ASFLAGS:=$(KERNEL_ARCH_ASFLAGS) -felf32
+
 DESTDIR?=
 PREFIX?=/usr/local
 EXEC_PREFIX?=$(PREFIX)
@@ -76,7 +79,7 @@ libk.a: $(LIBK_OBJS)
 	$(CC) -MD -c $< -o $@ -std=gnu11 $(LIBK_CFLAGS) $(LIBK_CPPFLAGS)
 
 .s.libk.o:
-	$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(LIBK_CPPFLAGS)
+	$(AS) $< -o $@ $(ASFLAGS)
 
 clean:
 	rm -f $(BINARIES) *.a

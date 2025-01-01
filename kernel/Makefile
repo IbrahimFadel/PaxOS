@@ -7,6 +7,9 @@ CPPFLAGS?=
 LDFLAGS?=
 LIBS?=
 
+AS:=nasm
+ASFLAGS:=$(KERNEL_ARCH_ASFLAGS) -felf32
+
 DESTDIR?=
 PREFIX?=/usr/local
 EXEC_PREFIX?=$(PREFIX)
@@ -31,6 +34,7 @@ KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 kernel/kernel.o \
 kernel/stack_prot.o \
+kernel/protect.o \
 
 OBJS=\
 $(ARCHDIR)/crti.o \
@@ -64,7 +68,7 @@ $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
 	$(CC) -MD -c $< -o $@ -std=gnu11 $(CFLAGS) $(CPPFLAGS)
 
 .s.o:
-	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
+	$(AS) $< -o $@ $(ASFLAGS)
 
 clean:
 	rm -f pax_os.kernel

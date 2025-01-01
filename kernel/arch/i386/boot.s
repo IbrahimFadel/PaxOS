@@ -1,34 +1,36 @@
-.set MAGIC, 0xe85250d6
-.set MODE,  0x0
-.set TYPE,  0x0
-.set FLAGS, 0x0
-.set SIZE,  0x8
+MAGIC equ 0xe85250d6
+MODE equ  0x0
+TYPE equ 0x0
+FLAGS equ 0x0
+SIZE equ 0x8
 
-.section .multiboot_header
+section .multiboot_header
 header_start:
-	.4byte MAGIC
-	.4byte MODE
-	.4byte header_end - header_start
-	.4byte 0x100000000 - (MAGIC + 0 + (header_end - header_start))
-	.2byte TYPE
-	.2byte FLAGS
-	.4byte SIZE
+	dd MAGIC
+	dd MODE
+	dd header_end - header_start
+	dd 0x100000000 - (MAGIC + 0 + (header_end - header_start))
+	dw TYPE
+	dw FLAGS
+	dd SIZE
 header_end:
 
-.section .bss
-.align 16
+; Stack must be 16 byte aligned
+section .bss
+align 16
 stack_bottom:
-.skip 16384 # 16 KiB
+	resb 16384 ; 16 KiB
 stack_top:
 
-.section .text
-.global _start
-.type _start, @function
+extern kmain
+section .text
+global _start:function (_start.end - _start)
+
 _start:
-	mov $stack_top, %esp
+	mov esp, stack_top
 	call kmain
 	cli
-1:	hlt
-	jmp 1b
-
-.size _start, . - _start
+.hang:
+	hlt
+	jmp .hang
+.end:
