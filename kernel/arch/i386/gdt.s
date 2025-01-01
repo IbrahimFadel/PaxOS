@@ -1,6 +1,6 @@
 section .text
-global gdt_flush
 
+global gdt_flush
 gdt_flush:
 	mov eax, [esp+4]
 	lgdt [eax]
@@ -12,4 +12,15 @@ gdt_flush:
 	mov ss, ax
 	jmp 0x08:.flush ; set CS
 .flush:
+	ret
+
+SEG_SIZE equ 8
+TSS_IDX equ 5
+
+; 0x2B = 0x28 + 3
+
+global tss_flush
+tss_flush:
+	mov ax, 0x2B
+	ltr ax
 	ret
