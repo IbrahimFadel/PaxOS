@@ -2,4 +2,11 @@
 set -e
 . ./iso.sh
 
-qemu-system-$(./target-triplet-to-arch.sh $HOST) -cdrom pax_os.iso -serial stdio
+DEBUG_FLAGS="-s -S"
+FLAGS="-cdrom pax_os.iso -serial stdio"
+
+if [[ $1 == "debug" ]]; then
+	FLAGS="$FLAGS $DEBUG_FLAGS"
+fi
+
+qemu-system-$(./target-triplet-to-arch.sh $HOST) $FLAGS
