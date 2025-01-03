@@ -1,6 +1,6 @@
 #include "tty.h"
 
-#include <kernel/tty.h>
+#include <pax/tty.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <string.h>

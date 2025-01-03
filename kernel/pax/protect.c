@@ -1,5 +1,5 @@
-#include <kernel/interrupt.h>
-#include <kernel/protect.h>
+#include <pax/interrupt.h>
+#include <pax/protect.h>
 #include <string.h>
 
 extern void gdt_flush(struct gdt_desc_t *gdt_ptr);

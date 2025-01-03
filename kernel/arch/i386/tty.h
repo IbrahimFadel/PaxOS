@@ -1,7 +1,7 @@
 #ifndef VGA_H
 #define VGA_H
 
-#include <kernel/tty.h>
+#include <pax/tty.h>
 #include <stddef.h>
 #include <stdint.h>
 

@@ -21,11 +21,11 @@ arch_asm_objs = asm_gen.process([arch_dir + '/gdt.s', arch_dir + '/idt.s'])
 linker_file = files(arch_dir + '/linker.ld')
 
 sources = [
-	'kernel/kernel.c',
-	'kernel/acpi.c',
-	'kernel/interrupt.c',
-	'kernel/protect.c',
-	'kernel/stack_prot.c',
+	'pax/kernel.c',
+	'pax/acpi.c',
+	'pax/interrupt.c',
+	'pax/protect.c',
+	'pax/stack_prot.c',
 	'arch/i386/tty.c',
 ]
 

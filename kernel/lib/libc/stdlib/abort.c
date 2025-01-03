@@ -1,4 +1,4 @@
-#include <kernel/tty.h>
+#include <pax/tty.h>
 #include <stdio.h>
 #include <stdlib.h>
 

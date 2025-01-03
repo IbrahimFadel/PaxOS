@@ -1,7 +1,7 @@
-#include <kernel/acpi.h>
-#include <kernel/interrupt.h>
-#include <kernel/protect.h>
-#include <kernel/tty.h>
+#include <pax/acpi.h>
+#include <pax/interrupt.h>
+#include <pax/protect.h>
+#include <pax/tty.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/io.h>
