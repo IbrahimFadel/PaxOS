@@ -4,48 +4,58 @@
 
 extern void gdt_flush(struct gdt_desc_t *gdt_ptr);
 extern void tss_flush();
-static void gdt_insert_gate(const u32 num, u32 base, u32 limit, u8 access,
-                            u8 flags);
-static void gdt_insert_tss(const u32 num, u16 ss0, u16 esp0);
 
-static struct seg_desc_t gdt_entries[GDT_SIZE];
-static struct gdt_desc_t gdt_desc;
-static struct tss_entry_t tss_entry;
+#define GATE(_base, _limit, _access, _flags)                \
+  {.base_low = (_base & 0xFFFF),                            \
+   .base_middle = (_base >> 16) && 0xFF,                    \
+   .base_high = (_base >> 24) && 0xFF,                      \
+   .limit = (_limit & 0xFFFF),                              \
+   .flags = ((_limit >> 16) & 0xF) | ((_flags & 0xF) << 4), \
+   .access = _access}
 
-static void gdt_insert_gate(const u32 num, u32 base, u32 limit, u8 access,
-                            u8 flags) {
-  gdt_entries[num].base_low = (base & 0xFFFF);
-  gdt_entries[num].base_middle = (base >> 16) && 0xFF;
-  gdt_entries[num].base_high = (base >> 24) && 0xFF;
-  gdt_entries[num].limit = (limit & 0xFFFF);
-  gdt_entries[num].flags = (limit >> 16) & 0xF;
-  gdt_entries[num].flags |= (flags & 0xF) << 4;
-  gdt_entries[num].access = access;
-}
-
-static void gdt_insert_tss(const u32 num, u16 ss0, u16 esp0) {
-  u32 base = (u32)&tss_entry;
-  u32 limit = base + sizeof(tss_entry);
-
-  gdt_insert_gate(num, base, limit, ACCESS_TSS, FLAGS_TSS);
-  memset(&tss_entry, 0, sizeof(tss_entry));
-  tss_entry.ss0 = ss0;
-  tss_entry.esp0 = esp0;
-  tss_entry.cs = 0x08 | PL3;
-  tss_entry.ss = tss_entry.ds = tss_entry.es = tss_entry.fs = tss_entry.gs =
-      0x10 | PL3;
-}
+static struct tss_entry_t tss_entry = {.cr3 = 0,
+                                       .cs = 0x08 | PL3,
+                                       .ds = 0x10 | PL3,
+                                       .eax = 0,
+                                       .ebp = 0,
+                                       .ebx = 0,
+                                       .ecx = 0,
+                                       .edi = 0,
+                                       .edx = 0,
+                                       .eflags = 0,
+                                       .eip = 0,
+                                       .es = 0x10 | PL3,
+                                       .esi = 0,
+                                       .esp0 = 0x0,
+                                       .esp1 = 0,
+                                       .esp2 = 0,
+                                       .esp = 0,
+                                       .fs = 0x10 | PL3,
+                                       .gs = 0x10 | PL3,
+                                       .iopb = 0,
+                                       .ldtr = 0,
+                                       .prev_tss = 0,
+                                       .ss0 = 0x10,
+                                       .ss1 = 0,
+                                       .ss2 = 0,
+                                       .ss = 0x10 | PL3,
+                                       .ssp = 0};
+static struct seg_desc_t gdt_entries[GDT_SIZE] = {
+    GATE(0, 0, 0, 0),
+    GATE(0, 0xFFFFFFFF, ACCESS_KERNEL_CODE, FLAGS),
+    GATE(0, 0xFFFFFFFF, ACCESS_KERNEL_DATA, FLAGS),
+    GATE(0, 0xFFFFFFFF, ACCESS_USER_CODE, FLAGS),
+    GATE(0, 0xFFFFFFFF, ACCESS_USER_DATA, FLAGS),
+};
+static struct gdt_desc_t gdt_desc = {
+    .size = (sizeof(struct seg_desc_t) * GDT_SIZE) - 1,
+    .offset = (u32)&gdt_entries};
 
 void gdt_init(void) {
-  gdt_desc.size = (sizeof(struct seg_desc_t) * GDT_SIZE) - 1;
-  gdt_desc.offset = (u32)&gdt_entries;
-
-  gdt_insert_gate(0, 0, 0, 0, 0);  // null
-  gdt_insert_gate(1, 0, 0xFFFFFFFF, ACCESS_KERNEL_CODE, FLAGS);
-  gdt_insert_gate(2, 0, 0xFFFFFFFF, ACCESS_KERNEL_DATA, FLAGS);
-  gdt_insert_gate(3, 0, 0xFFFFFFFF, ACCESS_USER_CODE, FLAGS);
-  gdt_insert_gate(4, 0, 0xFFFFFFFF, ACCESS_USER_DATA, FLAGS);
-  gdt_insert_tss(5, 0x10, 0x0);
+  const u32 base = (u32)&tss_entry;
+  const u32 limit = base + sizeof(struct tss_entry_t);
+  const struct seg_desc_t tss_seg = GATE(base, limit, ACCESS_TSS, FLAGS_TSS);
+  gdt_entries[TSS_IDX] = tss_seg;
 
   int_disable();
   gdt_flush(&gdt_desc);

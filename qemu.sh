@@ -1,7 +1,10 @@
 #!/bin/sh
 
 cd kernel
-meson compile -C build-i386
+
+if ! meson compile -C build-i386; then
+	exit 1
+fi
 
 HOST=i386
 DEBUG_FLAGS="-s -S"

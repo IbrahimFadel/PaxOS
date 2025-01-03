@@ -25,5 +25,5 @@ void kmain(void) {
 
   // acpiPowerOff();
 
-  shutdown();
+  // shutdown();
 }

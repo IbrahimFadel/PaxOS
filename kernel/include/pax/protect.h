@@ -4,6 +4,7 @@
 #include <sys/types.h>
 
 #define GDT_SIZE 6
+#define TSS_IDX (GDT_SIZE - 1)
 
 #define PL0 0
 #define PL1 1
@@ -47,8 +48,8 @@
 #define LONG(x) (x << 1)
 
 // 1100
-#define FLAGS GRAN(GRAN_PAGE) | SIZE(SIZE_32) | LONG(0)
-#define FLAGS_TSS GRAN(GRAN_BYTE) | SIZE(SIZE_16) | LONG(0)
+#define FLAGS (GRAN(GRAN_PAGE) | SIZE(SIZE_32) | LONG(0))
+#define FLAGS_TSS (GRAN(GRAN_BYTE) | SIZE(SIZE_16) | LONG(0))
 
 // Kernel Code
 #define ACCESS_KERNEL_CODE                                        \
