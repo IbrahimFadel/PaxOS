@@ -1,3 +1,3 @@
 #!/bin/bash
 
-$(./default-host.sh)-gdb isodir/boot/pax_os
+i386-elf-gdb kernel/build-i386/isodir/boot/pax_os.elf
