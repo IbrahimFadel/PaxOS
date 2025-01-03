@@ -50,7 +50,7 @@ int sprintf(char* str, const char* format, ...) {
       written++;
     } else if (*format == 's') {
       format++;
-      const char* str = va_arg(parameters, const char*);
+      char* str = va_arg(parameters, char*);
       size_t len = strlen(str);
       if (maxrem < len) {
         // TODO: Set errno to EOVERFLOW.

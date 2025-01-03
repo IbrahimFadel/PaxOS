@@ -1,8 +1,10 @@
 #include <kernel/acpi.h>
+#include <kernel/interrupt.h>
 #include <kernel/protect.h>
 #include <kernel/tty.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/io.h>
 
 // Temporary workaround until i fix ACPI
 void shutdown(void) { outw(0x2000, 0x604); }
@@ -17,6 +19,11 @@ void kmain(void) {
   printf("Booted\n");
 
   gdt_init();
+  idt_init();
 
-  // shutdown();
+  // initAcpi();
+
+  // acpiPowerOff();
+
+  shutdown();
 }

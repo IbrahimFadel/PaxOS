@@ -1,3 +1,4 @@
+#include <kernel/interrupt.h>
 #include <kernel/protect.h>
 #include <string.h>
 
@@ -10,9 +11,6 @@ static void gdt_insert_tss(const u32 num, u16 ss0, u16 esp0);
 static struct seg_desc_t gdt_entries[GDT_SIZE];
 static struct gdt_desc_t gdt_desc;
 static struct tss_entry_t tss_entry;
-
-static inline void int_disable(void) { __asm__ volatile("cli"); }
-static inline void int_enable(void) { __asm__ volatile("sti"); }
 
 static void gdt_insert_gate(const u32 num, u32 base, u32 limit, u8 access,
                             u8 flags) {
@@ -52,5 +50,4 @@ void gdt_init(void) {
   int_disable();
   gdt_flush(&gdt_desc);
   tss_flush();
-  int_enable();
 }
