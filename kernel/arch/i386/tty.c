@@ -9,7 +9,7 @@ void tty_init() {
   vga_colour = vga_char_colour(VGA_COLOR_YELLOW, VGA_COLOR_BLACK);
   vga_row = VGA_HEIGHT - 1;
   vga_col = 0;
-  vga_buf = (uint16_t*)0xb8000;
+  vga_buf = (uint16_t*)0xC03FF000;
 
   for (size_t y = 0; y < VGA_HEIGHT; y++) {
     for (size_t x = 0; x < VGA_WIDTH; x++) {
