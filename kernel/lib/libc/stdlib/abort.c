@@ -7,7 +7,7 @@ __attribute__((__noreturn__)) void abort(void) {
   // TODO: Add proper kernel panic.
   tty_set_colour(vga_char_colour(VGA_COLOR_RED, VGA_COLOR_BLACK));
   printf("kernel: panic: abort()\n");
-  asm volatile("hlt");
+  // asm volatile("hlt");
 #else
   // TODO: Abnormally terminate the process as if by SIGABRT.
   printf("abort()\n");

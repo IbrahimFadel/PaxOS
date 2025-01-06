@@ -5,8 +5,8 @@ import subprocess
 
 if __name__ == '__main__':
     [grub_cfg, kernel_elf] = sys.argv[1:3]
-    if not os.path.exists("isodir"):
-        os.mkdir("isodir")
+    if not os.path.exists("isodir/boot/grub"):
+        os.makedirs("isodir/boot/grub")
     shutil.copy2(grub_cfg, "isodir/boot/grub")
     shutil.copy2(kernel_elf, "isodir/boot")
     print("copied grub files")

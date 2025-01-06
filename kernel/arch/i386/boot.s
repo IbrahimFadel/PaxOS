@@ -1,97 +1,95 @@
-%include "multiboot.s"
+.intel_syntax noprefix
 
-KERNEL_STACK_SIZE equ 16384 ; 1024 x 16 = 16KiB. multiple of 16 for alignment
-KERNEL_VADDR equ 0xC0000000
-VGA_BUF_PHY_ADDR equ 0x000B8000
+.set KERNEL_STACK_SIZE, 16384 # 1024 x 16 = 16KiB. multiple of 16 for alignment
+.set KERNEL_VADDR, 0xC0000000
+.set VGA_BUF_PHY_ADDR, 0x000B8000 # TODO: i dont want to hardcode this, multiboot should provide it
 
-; -- Paging --
-; Page Directory (PD) and Page Table (PT) both have 1024 4 byte entries
-; Each PD entry points to a PT
-; Each PT entry points to a 4 KiB physical page frame
-; Each PT entry also has flag bits
-;
-; 1024 PD entries x 1024 PT entries x 4 KiB  per frame = 4Gb address space
-PAGE_SIZE equ 4096
-ENTRY_SIZE equ 4
-NUM_ENTRIES equ 1024
+.set PAGE_SIZE, 4096
+.set ENTRY_SIZE, 4
+.set NUM_ENTRIES, 1024
 
-; ENTRY FLAGS
-PAGE_PRESENT equ 1
-PAGE_RW equ (1 << 1)
+# ENTRY FLAGS
+.set PAGE_PRESENT, 1
+.set PAGE_RW, (1 << 1)
 
-CR0_WRITE_PROTECT equ (1 << 16)
-CR0_PAGING equ (1 << 31)
-
-section .bootstrap_stack alloc write nobits
-align 16
+.section .bootstrap_stack, "aw", @nobits
+.align 16
+.globl stack_top
 stack_bottom:
-	resb KERNEL_STACK_SIZE
+	.skip KERNEL_STACK_SIZE
 stack_top:
 
-section .bss alloc write nobits
-align PAGE_SIZE
-boot_page_directory:
-	resb PAGE_SIZE
-boot_page_table1:
-	resb PAGE_SIZE
+.section .bss, "aw", @nobits
+.globl boot_pd
 
-section .multiboot.text, alloc
-global _start
-extern _kernel_start, _kernel_end ; defined in linker.ld
+.align PAGE_SIZE
+boot_pd:
+	.skip ENTRY_SIZE * NUM_ENTRIES
+kernel_page_table:
+	.skip ENTRY_SIZE * NUM_ENTRIES
+
+.section .multiboot.text, "a"
+.globl _start
+.extern _kernel_start, _kernel_end # defined in linker.ld
 _start:
-	mov edi, boot_page_table1 - KERNEL_VADDR ; phys address of boot_page_table1.
-	mov esi, 0 ; map address 0x0 first
-	mov ecx, NUM_ENTRIES - 1 ; map all but one pages. the last one will be for VGA text buffer
-.map_addr:
-	; make sure we only map the kernel
-	cmp esi, _kernel_start
+	mov esi, 0
+	mov edi, offset kernel_page_table - KERNEL_VADDR
+	mov ecx, NUM_ENTRIES - 1 # map all but last entry
+.map_loop:
+	# put all kernel code into `kernel_page_table`
+	cmp esi, offset _kernel_start
 	jl .map_inc
-	cmp esi, _kernel_end - KERNEL_VADDR
+	cmp esi, offset _kernel_end - KERNEL_VADDR
 	jge .map_finish
 
-	; map physical address
+	# mark address as present and store in page table
 	mov edx, esi
 	or edx, PAGE_PRESENT | PAGE_RW
 	mov [edi], edx
 .map_inc:
-	add esi, PAGE_SIZE
-	add edi, ENTRY_SIZE
-	loop .map_addr
+	add esi, PAGE_SIZE  # go to next page that needs to be mapped
+	add edi, ENTRY_SIZE # go to next entry in `kernel_page_table`
+	loop .map_loop
 .map_finish:
-	; map VGA buffer to last table
-	; TODO: don't hardcode `VGA_BUF_PHY_ADDR`, we can get this info from multiboot at runtime
-	mov long [boot_page_table1 - KERNEL_VADDR + (NUM_ENTRIES - 1) * ENTRY_SIZE], VGA_BUF_PHY_ADDR | (PAGE_PRESENT | PAGE_RW)
+	# map VGA to last entry
+	mov dword ptr [kernel_page_table - KERNEL_VADDR + (NUM_ENTRIES - 1) * ENTRY_SIZE], VGA_BUF_PHY_ADDR | PAGE_PRESENT | PAGE_RW
 
-	; paging does not take effect immediately, so map to 0x0 temporarily
-	; map PT to 0x0
-	mov long [boot_page_directory - KERNEL_VADDR + 0], boot_page_table1 - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
-	; map PT to `KERNEL_VADDR`
-	mov long [boot_page_directory - KERNEL_VADDR + 768 * ENTRY_SIZE], boot_page_table1 - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
+	# once we enable paging, in order to fetch the next instruction we need this identity map
+	# after we have jumped to the higher half and everything is setup we can undo the mapping
+	# identity map PD[0] to kernel PT
+	mov dword ptr [boot_pd - KERNEL_VADDR], offset kernel_page_table - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
 
-	; set control registers for paging
-	mov ecx, boot_page_directory - KERNEL_VADDR
+	# map PD[768] to kernel PT
+	# 768 = KERNEL_VADDR / PAGE_SIZE / NUM_ENTRIES
+	mov dword ptr [boot_pd - KERNEL_VADDR + (768 * ENTRY_SIZE)], offset kernel_page_table - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
+
+	# set Page Directory Base Register
+	mov ecx, offset boot_pd - KERNEL_VADDR
 	mov cr3, ecx
 
+	# enable paging and write protect 
 	mov ecx, cr0
-	or ecx, CR0_PAGING | CR0_WRITE_PROTECT
+	or ecx, 0x80010000
 	mov cr0, ecx
 
 	lea ecx, higher_half
 	jmp ecx
 
-section .text
-extern kmain
+.section .text
+.extern kmain
 higher_half:
-	; unmap 0x0 as it is now unnecessary. 
-	mov long [boot_page_directory + 0], 0
-	; flush TLB after unmapping identity mapping
-	mov ecx, cr3
-	mov cr3, ecx
+	# undo identity mapping
+	mov dword ptr [boot_pd], 0
 
-	; prepare for kernel entry
-	mov esp, stack_top
-	push ebx ; physical address of mbi
-	push eax ; multiboot magic number 0x36d76289
+	# flush TLB after unmapping identity mapping
+	# tbh im not 100% sure if i did the `invlpg` instr correctlu, the mov is safer... because i'm an idiot
+	invlpg [boot_pd]
+	# mov ecx, cr3
+	# mov cr3, ecx
+
+	mov esp, offset stack_top
+	push ebx # physical address of mbi
+	push eax # multiboot magic number 0x36d76289
 	call kmain
 	cli
 .ruhroh:

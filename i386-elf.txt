@@ -3,6 +3,7 @@ c = 'i386-elf-gcc'
 cpp = 'i386-elf-g++'
 ar = 'i386-elf-ar'
 strip = 'i386-elf-strip'
+as = 'i386-elf-as'
 
 [host_machine]
 system = 'pax_os-kernel'

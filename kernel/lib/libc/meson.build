@@ -1,12 +1,17 @@
 project('libc', 'c', version: '0.1', license: 'GPL-2.0')
 
 project_root = meson.project_source_root()
-arch_dir = 'arch/i386'
 
-nasm = find_program('nasm')
-asm_gen = generator(nasm,
+arch = target_machine.cpu()
+arch_dir = 'arch/' + arch
+
+assembler = find_program('i386-elf-as')
+assembler_flags = ['-msyntax=intel', '@INPUT@', '-o', '@OUTPUT@']
+
+asm_gen = generator(assembler,
     output: '@BASENAME@.o',
-    arguments: ['-felf32', '@INPUT@', '-o', '@OUTPUT@'])
+    arguments: assembler_flags
+)
 
 # arch_asm_objs = asm_gen.process([arch_dir + '/gdt.s', arch_dir + '/idt.s'])
 arch_asm_objs = []
@@ -47,7 +52,7 @@ libc = static_library('c',
 			'-ffreestanding',
 			'-Wall',
 			'-Wextra',
-			'-fstack-protector-all',
+			# '-fstack-protector-all',
 			'-D__is_pax_os_kernel',
 			'-D__is_libk'
 		],
@@ -56,4 +61,4 @@ libc = static_library('c',
 libc_dep = declare_dependency(include_directories : incdir,
   link_with : libc)
 
-install_subdir('include', install_dir : project_root + '/../../../sysroot/usr/')
+install_subdir('include', install_dir : project_root + '/../../../sysroot/usr/', install_tag: 'headers')

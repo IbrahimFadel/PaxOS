@@ -1,7 +1,9 @@
-section .init
+.intel_syntax noprefix
+
+.section .init
 	pop ebp
 	ret
 
-section .fini
+.section .fini
 	pop ebp
 	ret

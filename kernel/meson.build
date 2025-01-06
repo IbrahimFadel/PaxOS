@@ -6,14 +6,19 @@ crtbegin_obj = find_crtbegin_result.stdout().strip()
 crtend_obj = find_crtend_result.stdout().strip()
 
 project_root = meson.current_source_dir()
-arch_dir = 'arch/i386'
 
-nasm = find_program('nasm')
-asm_gen = generator(nasm,
+arch = target_machine.cpu()
+arch_dir = 'arch/' + arch
+
+assembler = find_program('i386-elf-as')
+assembler_flags = ['-msyntax=intel', '@INPUT@', '-o', '@OUTPUT@']
+
+asm_gen = generator(assembler,
     output: '@BASENAME@.o',
-    arguments: ['-felf32', '@INPUT@', '-o', '@OUTPUT@'])
+    arguments: assembler_flags
+)
 
-bootstrapobjs = asm_gen.process([arch_dir + '/boot.s'])
+bootstrapobjs = asm_gen.process([arch_dir + '/multiboot.s', arch_dir + '/boot.s'])
 crtiobj = asm_gen.process([arch_dir + '/crti.s'])
 crtnobj = asm_gen.process([arch_dir + '/crtn.s'])
 arch_asm_objs = asm_gen.process([arch_dir + '/gdt.s', arch_dir + '/idt.s'])
@@ -26,6 +31,8 @@ sources = [
 	'pax/interrupt.c',
 	'pax/protect.c',
 	'pax/stack_prot.c',
+	'pax/boot_info.c',
+	'pax/memory.c',
 	'arch/i386/tty.c',
 ]
 
@@ -34,8 +41,8 @@ incdir = include_directories('include')
 libc_proj = subproject('libc')
 libc_dep = libc_proj.get_variable('libc_dep')
 
-uacpi = subproject('uacpi')
-uacpi_sources = uacpi.get_variable('sources')
+# uacpi = subproject('uacpi')
+# uacpi_sources = uacpi.get_variable('sources')
 # sources += uacpi_sources
 # uacpi_includes = uacpi.get_variable('includes')
 
@@ -47,6 +54,7 @@ kernel_elf = executable('pax_os.elf',
 		install: true, install_dir: project_root + '/../sysroot/boot',
 		include_directories: [incdir],
 		c_args: [
+			'-D__is_pax_os_kernel',
 			'--sysroot=' + project_root + '/../sysroot',
 			'-isystem=/usr/include',
 			'-std=gnu11',
@@ -55,18 +63,23 @@ kernel_elf = executable('pax_os.elf',
 			'-ffreestanding',
 			'-Wall',
 			'-Wextra',
-			'-fstack-protector-all',
-			'-D__is_pax_os_kernel'
+			# '-fstack-protector-all',
+			# '-Wstack-protector',
+			# '--param', 'ssp-buffer-size=4',
+			# '-fstack-clash-protection',
+			# '-D_FORTIFY_SOURCE=2',
+			# '--specs=nosys.specs'
 		],
     link_args: [
 			'--sysroot=' + project_root + '/../sysroot',
-			'-T', project_root + '/arch/i386/linker.ld',
+			'-T', project_root + '/' + arch_dir + '/linker.ld',
 			'-O2',
 			'-lgcc',
 			'-lc',
-			'-nostdlib'
+			'-nostdlib',
+			# '--specs=nosys.specs'
 		],
-    link_depends: 'arch/i386/linker.ld',
+    link_depends: arch_dir + '/linker.ld',
     objects: [crtbegin_obj, crtend_obj, arch_asm_objs],
 		dependencies: [libc_dep]
 )
@@ -92,4 +105,4 @@ iso_gen = custom_target('build-iso',
 #     # depends: [libc_proj],
 # )
 
-install_subdir('include', install_dir : project_root + '/../sysroot/usr/')
+install_subdir('include', install_dir: project_root + '/../sysroot/usr/', install_tag: 'headers')

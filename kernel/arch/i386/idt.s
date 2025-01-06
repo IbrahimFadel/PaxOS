@@ -1,25 +1,28 @@
-section .text
-global idt_flush
+.intel_syntax noprefix
+
+.section .text
+.globl idt_flush
 idt_flush:
 	mov eax, [esp+4]
 	lidt [eax]
 	ret
 
-%macro ISR_NO_ERRCODE 1
-global isr%1
-isr%1:
+.macro ISR_NO_ERRCODE, n
+.globl isr\n
+isr\n:
 	cli
-	push long 0
-	push long %1
+	push 0
+	push \n
 	jmp isr_common
-%endmacro
-%macro ISR_ERRCODE 1
-global isr%1
-isr%1:
+.endm
+
+.macro ISR_ERRCODE, n
+.globl isr\n
+isr\n:
 	cli
-	push long %1
+	push \n
 	jmp isr_common
-%endmacro
+.endm
 
 ISR_NO_ERRCODE 0
 ISR_NO_ERRCODE 1
@@ -56,7 +59,7 @@ ISR_NO_ERRCODE 31
 ISR_NO_ERRCODE 128
 ISR_NO_ERRCODE 177
 
-extern isr_handler
+.extern isr_handler
 isr_common:
 	pusha
 	mov eax, ds
@@ -81,14 +84,14 @@ isr_common:
 	sti
 	iret
 
-%macro IRQ 2
-global irq%1
-irq%1:
+.macro IRQ, n, idx
+.globl irq\n
+irq\n:
 	cli
-	push long 0
-	push long %2
+	push 0
+	push \idx
 	jmp irq_common
-%endmacro
+.endm
 
 IRQ 0, 32
 IRQ 1, 33
@@ -107,7 +110,7 @@ IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
 
-extern irq_handler
+.extern irq_handler
 irq_common:
 	pusha
 	mov eax, ds

@@ -3,3 +3,5 @@ isodir
 sysroot
 .vscode/
 dis
+VGABIOS-lgpl-latest
+BIOS-bochs-latest
