@@ -63,6 +63,9 @@ _start:
 	# 768 = KERNEL_VADDR / PAGE_SIZE / NUM_ENTRIES
 	mov dword ptr [boot_pd - KERNEL_VADDR + (768 * ENTRY_SIZE)], offset kernel_page_table - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
 
+	# map PD[1023] to PD[0]
+	mov dword ptr [boot_pd - KERNEL_VADDR + (NUM_ENTRIES - 1) * ENTRY_SIZE], offset boot_pd - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
+
 	# set Page Directory Base Register
 	mov ecx, offset boot_pd - KERNEL_VADDR
 	mov cr3, ecx
@@ -79,13 +82,13 @@ _start:
 .extern kmain
 higher_half:
 	# undo identity mapping
-	mov dword ptr [boot_pd], 0
+	# mov dword ptr [boot_pd], 0
 
 	# flush TLB after unmapping identity mapping
 	# tbh im not 100% sure if i did the `invlpg` instr correctlu, the mov is safer... because i'm an idiot
-	invlpg [boot_pd]
-	# mov ecx, cr3
-	# mov cr3, ecx
+	# invlpg [boot_pd]
+	mov ecx, cr3
+	mov cr3, ecx
 
 	mov esp, offset stack_top
 	push ebx # physical address of mbi

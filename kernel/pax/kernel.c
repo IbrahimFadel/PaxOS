@@ -13,31 +13,24 @@
 void shutdown(void) { outw(0x2000, 0x604); }
 
 void kmain(u32 magic, u32 mbi_phys_addr) {
-  printf("PaxOS booted\n");
+  printf("booted\n");
   if (mb_verify_boot(magic, mbi_phys_addr) == FAILURE) {
     shutdown();
   }
 
-  // mb_init(mbi_phys_addr);
+  gdt_init();
+  idt_init();
 
-  // gdt_init();
-  // idt_init();
+  // tty_init();
+  // char buf[16];
+  // sprintf(buf, "Pax OS v%d.%d\n", 0, 1);
+  // tty_writestring(buf);
 
-  // u32 phys_alloc_start = (mbi_phys_addr + 0xFFF) & ~0xFFF;
-  // mem_init(mbi_phys_addr, phys_alloc_start);
-  // printf("memory allocation done\n");
-
-  tty_init();
-  char buf[16];
-  sprintf(buf, "Pax OS v%d.%d\n", 0, 1);
-  tty_writestring(buf);
-
-  // printf("hi\n");
-
-  // mem_init(multiboot_info);
-  // initAcpi();
-
-  // acpiPowerOff();
-
-  // shutdown();
+  struct mb_tag_t *tag = (struct mb_tag_t *)(mbi_phys_addr + 8);
+  int x = tag->type;
+  switch (x) {
+    default:
+      printf("%d\n", x);
+      break;
+  }
 }

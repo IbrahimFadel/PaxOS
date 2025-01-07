@@ -17,21 +17,8 @@ int mb_verify_boot(u32 magic, u32 mbi_addr) {
 }
 
 void mb_init(u32 addr) {
-  printf("mbi addr: 0x%x\n", addr);
-  // struct mb_tag_t *tag = (struct mb_tag_t *)(addr + 8);
-  // printf("tag addr: 0x%x\n", tag);
-  u32 vaddr = 0xFFFCCCC0;
-  map_page((void *)addr, (void *)vaddr, 3);
-  // struct mb_tag_t *tag = (struct mb_tag_t *)(vaddr + 8);
-  // printf("%d\n", tag->type);
-
-  // printf("%d\n", tag->type);
-  // struct mb_tag_t *tag;
-  // for (tag = (struct mb_tag_t *)(addr + 8); tag->type != MB_TAG_TYPE_END;
-  //      tag = (struct mb_tag_t *)((u8 *)tag + ((tag->size + 7) & ~7))) {
-  // }
   struct mb_tag_t *tag;
-  for (tag = (struct mb_tag_t *)(vaddr + 8); tag->type != MB_TAG_TYPE_END;
+  for (tag = (struct mb_tag_t *)(addr + 8); tag->type != MB_TAG_TYPE_END;
        tag = (struct mb_tag_t *)((u8 *)tag + ((tag->size + 7) & ~7))) {
     switch (tag->type) {
       case MB_TAG_TYPE_CMDLINE:

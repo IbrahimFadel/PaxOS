@@ -10,11 +10,7 @@ void tty_init() {
   vga_colour = vga_char_colour(VGA_COLOR_YELLOW, VGA_COLOR_BLACK);
   vga_row = VGA_HEIGHT - 1;
   vga_col = 0;
-
-  // 0xC03FF000 -> 768 PF entry -> 1023 PT Entry -> 0 offset
-  // ie. Last Entry of kernel PT
   vga_buf = (u16*)0xC03FF000;
-  // vga_buf = (u16*)get_physaddr(vga_buf);
 
   for (size_t y = 0; y < VGA_HEIGHT; y++) {
     for (size_t x = 0; x < VGA_WIDTH; x++) {
