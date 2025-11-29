@@ -20,15 +20,15 @@ stack_bottom:
 stack_top:
 
 .section .bss, "aw", @nobits
-.globl boot_pd
+.globl boot_page_dir
 
 .align PAGE_SIZE
-boot_pd:
+boot_page_dir:
 	.skip ENTRY_SIZE * NUM_ENTRIES
 kernel_page_table:
 	.skip ENTRY_SIZE * NUM_ENTRIES
 
-.section .multiboot.text, "a"
+.section .multiboot2.text, "a"
 .globl _start
 .extern _kernel_start, _kernel_end # defined in linker.ld
 _start:
@@ -54,25 +54,28 @@ _start:
 	# map VGA to last entry
 	mov dword ptr [kernel_page_table - KERNEL_VADDR + (NUM_ENTRIES - 1) * ENTRY_SIZE], VGA_BUF_PHY_ADDR | PAGE_PRESENT | PAGE_RW
 
-	# once we enable paging, in order to fetch the next instruction we need this identity map
-	# after we have jumped to the higher half and everything is setup we can undo the mapping
-	# identity map PD[0] to kernel PT
-	mov dword ptr [boot_pd - KERNEL_VADDR], offset kernel_page_table - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
+	# 1073184 = 100000110000000100000
+	# offset = 32
+	# PT num 262
+	# PD num 0
+
+	# identity map PD[0] to kernel PT, that way we can fetch the next instruction after enabling paging
+	mov dword ptr [boot_page_dir - KERNEL_VADDR], offset kernel_page_table - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
 
 	# map PD[768] to kernel PT
 	# 768 = KERNEL_VADDR / PAGE_SIZE / NUM_ENTRIES
-	mov dword ptr [boot_pd - KERNEL_VADDR + (768 * ENTRY_SIZE)], offset kernel_page_table - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
+	mov dword ptr [boot_page_dir - KERNEL_VADDR + (768 * ENTRY_SIZE)], offset kernel_page_table - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
 
 	# map PD[1023] to PD[0]
-	mov dword ptr [boot_pd - KERNEL_VADDR + (NUM_ENTRIES - 1) * ENTRY_SIZE], offset boot_pd - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
+	mov dword ptr [boot_page_dir - KERNEL_VADDR + (NUM_ENTRIES - 1) * ENTRY_SIZE], offset boot_page_dir - KERNEL_VADDR + (PAGE_PRESENT | PAGE_RW)
 
 	# set Page Directory Base Register
-	mov ecx, offset boot_pd - KERNEL_VADDR
+	mov ecx, offset boot_page_dir - KERNEL_VADDR
 	mov cr3, ecx
 
 	# enable paging and write protect 
 	mov ecx, cr0
-	or ecx, 0x80010000
+	or ecx, 0x80000001
 	mov cr0, ecx
 
 	lea ecx, higher_half
@@ -82,17 +85,17 @@ _start:
 .extern kmain
 higher_half:
 	# undo identity mapping
-	# mov dword ptr [boot_pd], 0
+	mov dword ptr [boot_page_dir], 0
 
 	# flush TLB after unmapping identity mapping
 	# tbh im not 100% sure if i did the `invlpg` instr correctlu, the mov is safer... because i'm an idiot
-	# invlpg [boot_pd]
+	# invlpg [boot_page_dir]
 	mov ecx, cr3
 	mov cr3, ecx
 
 	mov esp, offset stack_top
-	push ebx # physical address of mbi
-	push eax # multiboot magic number 0x36d76289
+	; push ebx # physical address of mbi
+	; push eax # multiboot2 magic number 0x36d76289
 	call kmain
 	cli
 .ruhroh:

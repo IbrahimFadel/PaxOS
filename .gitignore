@@ -1,7 +1,4 @@
-*.iso
-isodir
-sysroot
 .vscode/
-dis
-VGABIOS-lgpl-latest
-BIOS-bochs-latest
+build/
+iso/
+old/
