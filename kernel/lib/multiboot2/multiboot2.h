@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define MULTIBOOT2_DATA_SECTION                                                \
+  __attribute__((used, section(".multiboot2.data")))
 #define MULTIBOOT2_MAGIC 0xE85250D6
 #define MULTIBOOT2_NUM_TAGS 1
 

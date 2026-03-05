@@ -35,7 +35,7 @@ SECTIONS {
 		/* KEEP(*(.bootstrap_stack)) */
 	}
 
-	.bootstrap_stack (NOLOAD) : ALIGN(16) {
+	.bootstrap_stack (NOLOAD) : ALIGN(STACK_ALIGNMENT) {
 		KEEP(*(.bootstrap_stack))
 	}
 
