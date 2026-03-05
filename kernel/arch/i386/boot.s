@@ -1,3 +1,5 @@
+#include "mmap.h"
+
 .intel_syntax noprefix
 
 .set KERNEL_STACK_SIZE, 16384 # 1024 x 16 = 16KiB. multiple of 16 for alignment
@@ -37,7 +39,7 @@ _start:
 	mov ecx, NUM_ENTRIES - 1 # map all but last entry
 .map_loop:
 	# put all kernel code into `kernel_page_table`
-	cmp esi, offset _kernel_start
+	cmp esi, offset KERNEL_START
 	jl .map_inc
 	cmp esi, offset _kernel_end - KERNEL_VADDR
 	jge .map_finish

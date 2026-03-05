@@ -26,10 +26,11 @@ else()
 endif()
 
 # ─── Assembler / Archiver ─────────────────────────────────────────────────────
-find_program(CROSS_ASM i386-elf-as)
-if(CROSS_ASM)
-    set(CMAKE_ASM_COMPILER ${CROSS_ASM})
-endif()
+# find_program(CROSS_ASM i386-elf-as)
+# if(CROSS_ASM)
+#     set(CMAKE_ASM_COMPILER ${CROSS_ASM})
+# endif()
+set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 
 find_program(CROSS_AR i386-elf-ar)
 if(CROSS_AR)
@@ -46,9 +47,8 @@ if(CROSS_STRIP)
     set(CMAKE_STRIP ${CROSS_STRIP})
 endif()
 
-# ─── Sysroot (optional) ───────────────────────────────────────────────────────
-# Set CMAKE_SYSROOT if you have a dedicated i386 sysroot, e.g.:
-#   set(CMAKE_SYSROOT /opt/sysroots/i386-linux-gnu)
+# ─── Sysroot ───────────────────────────────────────────────────────
+set(SYSROOT ${CMAKE_SOURCE_DIR}/sysroot)
 
 # ─── Search Paths ─────────────────────────────────────────────────────────────
 # Prevent CMake from accidentally resolving host (64-bit) libraries.
@@ -58,7 +58,6 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)   # target headers only
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)   # target packages only
 
 # ─── Compiler Flags ───────────────────────────────────────────────────────────
-# Core 32-bit flag (always set, even with cross-compiler, for clarity)
 set(ARCH_FLAGS "-m32 -march=i386 -mtune=i386")
 
 set(CMAKE_C_FLAGS_INIT             "${ARCH_FLAGS}")
@@ -69,25 +68,10 @@ set(CMAKE_MODULE_LINKER_FLAGS_INIT "-m32")
 
 set(ARCH_DIR ${CMAKE_SOURCE_DIR}/kernel/arch/i386)
 
-set(CMAKE_C_FLAGS "-ffreestanding -nostdlib -nostartfiles -m32 -std=gnu99")
+set(CMAKE_C_FLAGS "-ffreestanding -nostdlib -nostartfiles -m32 -std=gnu99 --sysroot=${SYSROOT} -isystem=/usr/include")
 set(CMAKE_C_LINK_FLAGS "-nostdlib -nostartfiles -m32")
+
+set(CMAKE_ASM_FLAGS "-x assembler-with-cpp")
 
 set(KERNEL_LINKER_FILE_UNPROCESSED  ${ARCH_DIR}/linker.ld)
 set(KERNEL_LINKER_FILE ${CMAKE_BINARY_DIR}/kernel/linker.ld)
-
-add_custom_command(
-    OUTPUT
-        ${KERNEL_LINKER_FILE}
-    COMMAND
-        ${CMAKE_C_COMPILER}
-            -E -P -x c
-            # -I${COMMON_DIR}
-            ${KERNEL_LINKER_FILE_UNPROCESSED}
-            -o ${KERNEL_LINKER_FILE}
-    DEPENDS ${KERNEL_LINKER_FILE_UNPROCESSED}
-    COMMENT "Preprocessing kernel linker script"
-)
-
-add_custom_target(kernel_linker_script_preprocess
-    DEPENDS ${KERNEL_LINKER_FILE}
-)
