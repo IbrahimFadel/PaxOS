@@ -8,8 +8,5 @@ set(C_SRCS
 # header doesn't get discarded at link time
 add_library(multiboot2 OBJECT ${C_SRCS})
 
-target_include_directories(multiboot2 PRIVATE
-)
-
-target_link_libraries(multiboot2 PRIVATE
-)
+target_include_directories(multiboot2 PRIVATE )
+target_link_libraries(multiboot2 PRIVATE )

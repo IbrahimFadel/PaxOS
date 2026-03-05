@@ -1,14 +1,11 @@
 cmake_minimum_required(VERSION 3.22.4)
 
-set(CMAKE_C_COMPILER i386-elf-gcc)
-set(CMAKE_CXX_COMPILER i386-elf-g++)
-
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(KERNEL_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
+set(CMAKE_C_FLAGS_RELEASE "-O2")
 
-add_subdirectory(arch/i386)
-
+add_subdirectory(${ARCH_DIR})
 add_subdirectory(lib/memory)
 add_subdirectory(lib/multiboot2)
 add_subdirectory(lib/tty)
@@ -20,22 +17,12 @@ set(C_SRCS
 	$<TARGET_OBJECTS:multiboot2>
 )
 
-add_executable(pax_kernel ${C_SRCS})
-
+add_executable(pax_kernel)
+target_sources(pax_kernel PRIVATE ${C_SRCS})
 target_include_directories(pax_kernel PRIVATE include arch lib)
 target_link_libraries(pax_kernel PRIVATE klibc memory)
-# target_sources(pax_kernel PRIVATE
-# 	$<TARGET_OBJECTS:i386>
-# 	$<TARGET_OBJECTS:multiboot2>
-# )
-# target_link_libraries(pax_kernel PUBLIC multiboot2)
-
-set(CMAKE_C_FLAG "")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffreestanding -nostdlib -m32 -std=gnu99 -Wall -Wextra -Wpedantic")
-set(CMAKE_C_FLAGS_DEBUG "-O3 -g")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -g")
-
-set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -T ${LINKER_FILE} -nostdlib -lgcc")
+target_link_options(pax_kernel PRIVATE -T ${KERNEL_LINKER_FILE})
+add_dependencies(pax_kernel kernel_linker_script_preprocess)
 
 add_custom_target(iso
 	COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/iso/boot/grub

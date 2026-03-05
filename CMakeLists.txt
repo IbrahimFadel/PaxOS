@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.22.4)
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/toolchains/i386.cmake)
 project(pax C ASM)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+set(KERNEL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
 
 add_subdirectory(libc)
 add_subdirectory(kernel)

@@ -4,11 +4,6 @@ set(C_SRCS
     paging.c
 )
 
-add_library(memory ${C_SRCS})
-
-target_include_directories(memory PRIVATE
-    ${KERNEL_DIR}/arch
-)
-
-target_link_libraries(memory PRIVATE
-)
+add_library(memory STATIC ${C_SRCS})
+target_include_directories(memory PRIVATE )
+target_link_libraries(memory PRIVATE )
