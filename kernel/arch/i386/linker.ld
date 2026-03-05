@@ -2,10 +2,8 @@
 
 ENTRY(_start)
 
-_KERNEL_VA = KERNEL_VA;
-
 SECTIONS {
-    /* kernel loaded into _KERNEL_VA + 1MB VA */
+    /* kernel loaded into KERNEL_VA + 1MB VA */
 	/* this gets mapped to 1MB PA */
     . = KERNEL_OFFSET_START;
 	PROVIDE(_kernel_start = .);
@@ -18,21 +16,20 @@ SECTIONS {
         *(.multiboot2.text)
 	}
 
-	. += _KERNEL_VA;
+	. += KERNEL_VA;
 
-	.text ALIGN (4K) : AT (ADDR (.text) - _KERNEL_VA) {
+	.text ALIGN (4K) : AT (ADDR (.text) - KERNEL_VA) {
 		*(.text)
 	}
-	.rodata ALIGN (4K) : AT (ADDR (.rodata) - _KERNEL_VA) {
+	.rodata ALIGN (4K) : AT (ADDR (.rodata) - KERNEL_VA) {
 		*(.rodata)
 	}
-	.data ALIGN (4K) : AT (ADDR (.data) - _KERNEL_VA) {
+	.data ALIGN (4K) : AT (ADDR (.data) - KERNEL_VA) {
 		*(.data)
 	}
-	.bss ALIGN (4K) : AT (ADDR (.bss) - _KERNEL_VA) {
+	.bss ALIGN (4K) : AT (ADDR (.bss) - KERNEL_VA) {
 		*(COMMON)
 		*(.bss)
-		/* KEEP(*(.bootstrap_stack)) */
 	}
 
 	.bootstrap_stack (NOLOAD) : ALIGN(STACK_ALIGNMENT) {
