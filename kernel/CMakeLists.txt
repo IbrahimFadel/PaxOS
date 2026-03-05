@@ -33,9 +33,19 @@ add_custom_target(iso
 	COMMENT "Generating bootable ISO"
 )
 
+set(SERIAL_PORT 1234)
+
 add_custom_target(qemu
 	DEPENDS iso
-	COMMAND qemu-system-i386 -cdrom ${CMAKE_SOURCE_DIR}/build/pax_os.iso
+	COMMAND qemu-system-i386
+			-cdrom ${CMAKE_SOURCE_DIR}/build/pax_os.iso 
+			-serial tcp::${SERIAL_PORT},server,nowait
+)
+
+add_custom_target(serial
+    COMMAND nc localhost ${SERIAL_PORT}
+	USES_TERMINAL
+    COMMENT "Attaching to serial output..."
 )
 
 set_property(

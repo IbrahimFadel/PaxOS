@@ -6,6 +6,8 @@
 #define SUCCESS 0
 #define FAILURE -1
 
+static const uint16_t COM1 = 0x3F8;
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;

@@ -9,6 +9,8 @@ typedef u16 port_t;
 extern "C" {
 #endif
 
+void com1_init(void);
+
 u8 inb(port_t port);
 u8 inb_p(port_t port);
 u16 inw(port_t port);

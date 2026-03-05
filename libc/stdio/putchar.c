@@ -1,14 +1,15 @@
+#include <sys/io.h>
+
+#if defined(__is_libk)
 #include <pax/tty.h>
-
-static const uint16_t COM1 = 0x3F8;
-
-// #if defined(__is_libk)
-// #include <kernel/tty.h>
-// #endif
+#endif
 
 int putchar(int c) {
 #if defined(__is_libk)
-  // outb((char)c, COM1);
+  // wait for transmit buffer to be empty
+  while (!(inb(COM1 + 5) & 0x20)) {
+  }
+  outb(c, COM1);
   tty_putchar(c);
 #else
   // TODO: Implement stdio and the write system call.
