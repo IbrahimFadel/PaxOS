@@ -75,8 +75,8 @@ higher_half:
 	mov cr3, ecx
 
 	mov esp, offset stack_top
-	; push ebx # physical address of mbi
-	; push eax # multiboot2 magic number 0x36d76289
+	push ebx # physical address of mbi
+	push eax # multiboot2 magic number 0x36d76289
 	call kmain
 	cli
 .ruhroh:

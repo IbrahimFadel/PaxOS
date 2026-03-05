@@ -1,9 +1,8 @@
-#ifndef __KERNEL_H__
-#define __KERNEL_H__
+#ifndef KERNEL_H
+#define KERNEL_H
 
 #include <stdint.h>
 
-// void kmain(uint32_t multiboot2_info_pa, uint32_t multiboot2_magic);
-void kmain();
+void kmain(uint32_t mb2_magic, uint32_t mb2_info_pa);
 
 #endif

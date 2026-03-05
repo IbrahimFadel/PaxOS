@@ -1,4 +1,4 @@
-#include "tty/tty.h"
+#include <pax/tty.h>
 
 #include <stdbool.h>
 #include <stdint.h>

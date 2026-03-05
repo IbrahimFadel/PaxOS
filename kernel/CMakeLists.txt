@@ -8,7 +8,6 @@ set(CMAKE_C_FLAGS_RELEASE "-O2")
 add_subdirectory(${ARCH_DIR})
 add_subdirectory(lib/memory)
 add_subdirectory(lib/multiboot2)
-add_subdirectory(lib/tty)
 
 set(C_SRCS
 	kernel.c

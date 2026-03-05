@@ -27,7 +27,7 @@ add_custom_target(kernel_linker_script_preprocess
 )
 
 
-file(GLOB_RECURSE KERNEL_HEADERS ${CMAKE_SOURCE_DIR}/kernel/include/sys/*.h)
+file(GLOB_RECURSE KERNEL_HEADERS ${CMAKE_SOURCE_DIR}/kernel/include/*.h)
 file(GLOB_RECURSE LIBC_HEADERS   ${CMAKE_SOURCE_DIR}/libc/include/*.h)
 
 add_custom_command(
@@ -35,7 +35,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E make_directory ${SYSROOT}/usr/include/sys
     COMMAND ${CMAKE_COMMAND} -E make_directory ${SYSROOT}/usr/include
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/kernel/include/sys ${SYSROOT}/usr/include/sys
+        ${CMAKE_SOURCE_DIR}/kernel/include ${SYSROOT}/usr/include/pax
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/libc/include       ${SYSROOT}/usr/include
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/headers.stamp
@@ -44,5 +44,6 @@ add_custom_command(
 )
 add_custom_target(sysroot_headers DEPENDS ${CMAKE_BINARY_DIR}/headers.stamp)
 
+add_compile_definitions(__is_libk)
 add_subdirectory(libc)
 add_subdirectory(kernel)
