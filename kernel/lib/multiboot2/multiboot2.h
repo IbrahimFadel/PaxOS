@@ -141,6 +141,46 @@ typedef struct {
   uint16_t dseg_len;
 } multiboot2_tag_apm_table_t;
 
+typedef enum {
+  MULTIBOOT2_FRAMEBUFFER_TYPE_INDEXED = 0,
+  MULTIBOOT2_FRAMEBUFFER_TYPE_RGB = 1,
+  MULTIBOOT2_FRAMEBUFFER_TYPE_EGA_TEXT = 2,
+} multiboot2_framebuffer_type_t;
+
+typedef struct {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+} multiboot2_color_t;
+
+typedef struct {
+  uint64_t addr;
+  uint32_t pitch;
+  uint32_t width;
+  uint32_t height;
+  uint8_t bpp;
+  uint8_t type;
+  uint8_t reserved;
+  union {
+    struct {
+      uint16_t palette_num_colors;
+      multiboot2_color_t palette[0];
+    };
+    struct {
+      uint8_t red_field_position;
+      uint8_t red_mask_size;
+      uint8_t green_field_position;
+      uint8_t green_mask_size;
+      uint8_t blue_field_position;
+      uint8_t blue_mask_size;
+    };
+  };
+} multiboot2_tag_framebuffer_info_t;
+
+typedef struct {
+  uint8_t rsdp[0];
+} multiboot2_tag_acpi_old_rsdp_t;
+
 typedef struct {
   uint32_t type;
   uint32_t size;
@@ -152,17 +192,17 @@ typedef struct {
     multiboot2_tag_mem_map_t mem_map;
     multiboot2_tag_bootloader_name_t bootloader_name;
     multiboot2_tag_apm_table_t apm_table;
+    multiboot2_tag_framebuffer_info_t framebuffer_info;
+    multiboot2_tag_acpi_old_rsdp_t acpi_old_rsdp;
   };
 } multiboot2_tag_t;
 
 typedef struct {
-  // total size of boot information including this field and terminating tag in
-  // bytes
   uint32_t total_size;
-  // always set to zero and must be ignored by OS image
   uint32_t reserved;
 } multiboot2_boot_info_t;
 
 const char *multiboot2_mmap_type_to_str(multiboot2_mmap_entry_type_t mmap_type);
+void multiboot2_info_parse(multiboot2_boot_info_t *mbi);
 
 #endif

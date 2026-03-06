@@ -96,12 +96,11 @@ int printf(const char *restrict format, ...) {
       written += len;
     } else if (*format == 'x') {
       format++;
-      int n = (int)va_arg(parameters, int);
+      unsigned int n = va_arg(parameters, unsigned int);
       char str[32];
-      itoa(n, str, 16);
+      utoa(n, str, 16);
       size_t len = strlen(str);
       if (maxrem < len) {
-        // TODO: Set errno to EOVERFLOW.
         return -1;
       }
       if (!print(str, len))

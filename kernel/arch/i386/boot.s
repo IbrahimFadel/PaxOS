@@ -4,10 +4,10 @@
 
 .section .bootstrap_stack, "aw", @nobits
 .align 16
-.globl stack_top
-stack_bottom:
+.globl kernel_stack_top
+kernel_stack_bottom:
 	.skip STACK_SIZE
-stack_top:
+kernel_stack_top:
 
 .section .bss, "aw", @nobits
 .globl boot_page_dir
@@ -74,7 +74,7 @@ higher_half:
 	mov ecx, cr3
 	mov cr3, ecx
 
-	mov esp, offset stack_top
+	mov esp, offset kernel_stack_top
 	push ebx # physical address of mbi
 	push eax # multiboot2 magic number 0x36d76289
 	call kmain

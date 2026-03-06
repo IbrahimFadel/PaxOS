@@ -43,4 +43,8 @@ __attribute__((always_inline)) static inline void set_cr3(uint32_t cr3) {
   __asm__ __volatile__("mov %0, %%cr3" : : "r"(cr3) : "memory");
 }
 
+__attribute__((always_inline)) static inline void cli(void) {
+  __asm__ __volatile__("cli" :::);
+}
+
 #endif

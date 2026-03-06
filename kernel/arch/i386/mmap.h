@@ -19,4 +19,6 @@
 #define PAGE_PRESENT 1
 #define PAGE_RW (1 << 1)
 
+#define TSS_ALIGNMENT 8
+
 #endif

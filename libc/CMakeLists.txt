@@ -1,7 +1,25 @@
 cmake_minimum_required(VERSION 3.22.4)
 
-file(GLOB C_SRCS **/**/*.c **/*.c *.c)
+add_library(klibc STATIC
+    arch/i386/io.c
 
-add_library(klibc ${C_SRCS})
+    stdio/printf.c
+    stdio/putchar.c
+    stdio/puts.c
+    stdio/sprintf.c
+
+    stdlib/abort.c
+    stdlib/itoa.c
+    stdlib/panic.c
+    stdlib/utoa.c
+
+    string/memcmp.c
+    string/memcpy.c
+    string/memmove.c
+    string/memset.c
+    string/strcpy.c
+    string/strlen.c
+    string/strrev.c
+)
 target_include_directories(klibc PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 add_dependencies(klibc sysroot_headers)

@@ -26,6 +26,9 @@ SECTIONS {
 	}
 	.data ALIGN (4K) : AT (ADDR (.data) - KERNEL_VA) {
 		*(.data)
+		. = ALIGN(TSS_ALIGNMENT);
+		PROVIDE(ld_tss_base = .);
+		*(.tss)
 	}
 	.bss ALIGN (4K) : AT (ADDR (.bss) - KERNEL_VA) {
 		*(COMMON)

@@ -10,7 +10,9 @@ add_subdirectory(lib/memory)
 add_subdirectory(lib/multiboot2)
 
 set(C_SRCS
-	kernel.c
+	src/gdt.c
+	src/kernel.c
+	src/tss.c
 
 	$<TARGET_OBJECTS:i386>
 	$<TARGET_OBJECTS:multiboot2>
@@ -36,6 +38,15 @@ add_custom_target(iso
 set(SERIAL_PORT 1234)
 
 add_custom_target(qemu
+	DEPENDS iso
+	USES_TERMINAL
+	COMMAND qemu-system-i386
+			-cdrom ${CMAKE_SOURCE_DIR}/build/pax_os.iso 
+			-serial pty
+			-nographic
+)
+
+add_custom_target(qemu-gui
 	DEPENDS iso
 	USES_TERMINAL
 	COMMAND qemu-system-i386
