@@ -10,8 +10,10 @@ add_subdirectory(lib/memory)
 add_subdirectory(lib/multiboot2)
 
 set(C_SRCS
+	src/idt.c
 	src/gdt.c
 	src/kernel.c
+	src/pic.c
 	src/tss.c
 
 	$<TARGET_OBJECTS:i386>

@@ -1,108 +1,84 @@
 #include "gdt.h"
 #include "tss.h"
-#include <stdio.h>
 
 #define SEGMENT_DESCRIPTOR_NULL 0x0
 
-#define KERNEL_CODE_SEGMENT_ACCESS_BYTE                                        \
-  (SEGMENT_DESCRIPTOR_ACCESS_BYTE_READ |                                       \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_CONFORM_DPL_RING |                           \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_EXEC |                                       \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_TYPE_CODE |                                  \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_RING_0 |                                     \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_PRESENT)
+#define KERNEL_CODE_SEGMENT_ACCESS_BYTE                                                  \
+  (SEGMENT_DESCRIPTOR_ACCESS_BYTE_READ | SEGMENT_DESCRIPTOR_ACCESS_BYTE_CONFORM_DPL_RING \
+   | SEGMENT_DESCRIPTOR_ACCESS_BYTE_EXEC | SEGMENT_DESCRIPTOR_ACCESS_BYTE_TYPE_CODE      \
+   | SEGMENT_DESCRIPTOR_ACCESS_BYTE_RING_0 | SEGMENT_DESCRIPTOR_ACCESS_BYTE_PRESENT)
 
-#define KERNEL_CODE_SEGMENT_FLAGS                                              \
-  (SEGMENT_DESCRIPTOR_FLAGS_NOT_LONG_MODE |                                    \
-   SEGMENT_DESCRIPTOR_FLAGS_SIZE_32BIT |                                       \
-   SEGMENT_DESCRIPTOR_FLAGS_GRANULARITY_PAGE)
+#define KERNEL_CODE_SEGMENT_FLAGS                                               \
+  (SEGMENT_DESCRIPTOR_FLAGS_NOT_LONG_MODE | SEGMENT_DESCRIPTOR_FLAGS_SIZE_32BIT \
+   | SEGMENT_DESCRIPTOR_FLAGS_GRANULARITY_PAGE)
 
-#define SEGMENT_DESCRIPTOR_KERNEL_CODE                                         \
-  (SEGMENT_DESCRIPTOR_BASE(0x0) | SEGMENT_DESCRIPTOR_LIMIT(0xFFFFF) |          \
-   KERNEL_CODE_SEGMENT_ACCESS_BYTE | KERNEL_CODE_SEGMENT_FLAGS)
+#define SEGMENT_DESCRIPTOR_KERNEL_CODE                              \
+  (SEGMENT_DESCRIPTOR_BASE(0x0) | SEGMENT_DESCRIPTOR_LIMIT(0xFFFFF) \
+   | KERNEL_CODE_SEGMENT_ACCESS_BYTE | KERNEL_CODE_SEGMENT_FLAGS)
 
-#define KERNEL_DATA_SEGMENT_ACCESS_BYTE                                        \
-  (SEGMENT_DESCRIPTOR_ACCESS_BYTE_WRITE |                                      \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_DIRECTION_UP |                               \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_NO_EXEC |                                    \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_TYPE_DATA |                                  \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_RING_0 |                                     \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_PRESENT)
+#define KERNEL_DATA_SEGMENT_ACCESS_BYTE                                                \
+  (SEGMENT_DESCRIPTOR_ACCESS_BYTE_WRITE | SEGMENT_DESCRIPTOR_ACCESS_BYTE_DIRECTION_UP  \
+   | SEGMENT_DESCRIPTOR_ACCESS_BYTE_NO_EXEC | SEGMENT_DESCRIPTOR_ACCESS_BYTE_TYPE_DATA \
+   | SEGMENT_DESCRIPTOR_ACCESS_BYTE_RING_0 | SEGMENT_DESCRIPTOR_ACCESS_BYTE_PRESENT)
 
-#define KERNEL_DATA_SEGMENT_FLAGS                                              \
-  (SEGMENT_DESCRIPTOR_FLAGS_NOT_LONG_MODE |                                    \
-   SEGMENT_DESCRIPTOR_FLAGS_SIZE_32BIT |                                       \
-   SEGMENT_DESCRIPTOR_FLAGS_GRANULARITY_PAGE)
+#define KERNEL_DATA_SEGMENT_FLAGS                                               \
+  (SEGMENT_DESCRIPTOR_FLAGS_NOT_LONG_MODE | SEGMENT_DESCRIPTOR_FLAGS_SIZE_32BIT \
+   | SEGMENT_DESCRIPTOR_FLAGS_GRANULARITY_PAGE)
 
-#define SEGMENT_DESCRIPTOR_KERNEL_DATA                                         \
-  (SEGMENT_DESCRIPTOR_BASE(0x0) | SEGMENT_DESCRIPTOR_LIMIT(0xFFFFF) |          \
-   KERNEL_DATA_SEGMENT_ACCESS_BYTE | KERNEL_DATA_SEGMENT_FLAGS)
+#define SEGMENT_DESCRIPTOR_KERNEL_DATA                              \
+  (SEGMENT_DESCRIPTOR_BASE(0x0) | SEGMENT_DESCRIPTOR_LIMIT(0xFFFFF) \
+   | KERNEL_DATA_SEGMENT_ACCESS_BYTE | KERNEL_DATA_SEGMENT_FLAGS)
 
-#define USER_CODE_SEGMENT_ACCESS_BYTE                                          \
-  (SEGMENT_DESCRIPTOR_ACCESS_BYTE_READ |                                       \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_CONFORM_DPL_RING |                           \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_EXEC |                                       \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_TYPE_CODE |                                  \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_RING_3 |                                     \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_PRESENT)
+#define USER_CODE_SEGMENT_ACCESS_BYTE                                                    \
+  (SEGMENT_DESCRIPTOR_ACCESS_BYTE_READ | SEGMENT_DESCRIPTOR_ACCESS_BYTE_CONFORM_DPL_RING \
+   | SEGMENT_DESCRIPTOR_ACCESS_BYTE_EXEC | SEGMENT_DESCRIPTOR_ACCESS_BYTE_TYPE_CODE      \
+   | SEGMENT_DESCRIPTOR_ACCESS_BYTE_RING_3 | SEGMENT_DESCRIPTOR_ACCESS_BYTE_PRESENT)
 
-#define USER_CODE_SEGMENT_FLAGS                                                \
-  (SEGMENT_DESCRIPTOR_FLAGS_NOT_LONG_MODE |                                    \
-   SEGMENT_DESCRIPTOR_FLAGS_SIZE_32BIT |                                       \
-   SEGMENT_DESCRIPTOR_FLAGS_GRANULARITY_PAGE)
+#define USER_CODE_SEGMENT_FLAGS                                                 \
+  (SEGMENT_DESCRIPTOR_FLAGS_NOT_LONG_MODE | SEGMENT_DESCRIPTOR_FLAGS_SIZE_32BIT \
+   | SEGMENT_DESCRIPTOR_FLAGS_GRANULARITY_PAGE)
 
-#define SEGMENT_DESCRIPTOR_USER_CODE                                           \
-  (SEGMENT_DESCRIPTOR_BASE(0x0) | SEGMENT_DESCRIPTOR_LIMIT(0xFFFFF) |          \
-   USER_CODE_SEGMENT_ACCESS_BYTE | USER_CODE_SEGMENT_FLAGS)
+#define SEGMENT_DESCRIPTOR_USER_CODE                                \
+  (SEGMENT_DESCRIPTOR_BASE(0x0) | SEGMENT_DESCRIPTOR_LIMIT(0xFFFFF) \
+   | USER_CODE_SEGMENT_ACCESS_BYTE | USER_CODE_SEGMENT_FLAGS)
 
-#define USER_DATA_SEGMENT_ACCESS_BYTE                                          \
-  (SEGMENT_DESCRIPTOR_ACCESS_BYTE_WRITE |                                      \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_DIRECTION_UP |                               \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_NO_EXEC |                                    \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_TYPE_DATA |                                  \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_RING_3 |                                     \
-   SEGMENT_DESCRIPTOR_ACCESS_BYTE_PRESENT)
+#define USER_DATA_SEGMENT_ACCESS_BYTE                                                  \
+  (SEGMENT_DESCRIPTOR_ACCESS_BYTE_WRITE | SEGMENT_DESCRIPTOR_ACCESS_BYTE_DIRECTION_UP  \
+   | SEGMENT_DESCRIPTOR_ACCESS_BYTE_NO_EXEC | SEGMENT_DESCRIPTOR_ACCESS_BYTE_TYPE_DATA \
+   | SEGMENT_DESCRIPTOR_ACCESS_BYTE_RING_3 | SEGMENT_DESCRIPTOR_ACCESS_BYTE_PRESENT)
 
-#define USER_DATA_SEGMENT_FLAGS                                                \
-  (SEGMENT_DESCRIPTOR_FLAGS_NOT_LONG_MODE |                                    \
-   SEGMENT_DESCRIPTOR_FLAGS_SIZE_32BIT |                                       \
-   SEGMENT_DESCRIPTOR_FLAGS_GRANULARITY_PAGE)
+#define USER_DATA_SEGMENT_FLAGS                                                 \
+  (SEGMENT_DESCRIPTOR_FLAGS_NOT_LONG_MODE | SEGMENT_DESCRIPTOR_FLAGS_SIZE_32BIT \
+   | SEGMENT_DESCRIPTOR_FLAGS_GRANULARITY_PAGE)
 
-#define SEGMENT_DESCRIPTOR_USER_DATA                                           \
-  (SEGMENT_DESCRIPTOR_BASE(0x0) | SEGMENT_DESCRIPTOR_LIMIT(0xFFFFF) |          \
-   USER_DATA_SEGMENT_ACCESS_BYTE | USER_DATA_SEGMENT_FLAGS)
+#define SEGMENT_DESCRIPTOR_USER_DATA                                \
+  (SEGMENT_DESCRIPTOR_BASE(0x0) | SEGMENT_DESCRIPTOR_LIMIT(0xFFFFF) \
+   | USER_DATA_SEGMENT_ACCESS_BYTE | USER_DATA_SEGMENT_FLAGS)
 
 #define TSS_SEGMENT_ACCESS_BYTE ((uint64_t)0x89 << 40)
-#define TSS_SEGMENT_FLAGS 0x0
-#define SEGMENT_DESCRIPTOR_TSS                                                 \
-  (SEGMENT_DESCRIPTOR_BASE((uint32_t)ld_tss_base) |                            \
-   SEGMENT_DESCRIPTOR_LIMIT(sizeof(tss_t) - 1) | TSS_SEGMENT_ACCESS_BYTE |     \
-   TSS_SEGMENT_FLAGS)
+#define TSS_SEGMENT_FLAGS       0x0
+#define SEGMENT_DESCRIPTOR_TSS                                                                  \
+  (SEGMENT_DESCRIPTOR_BASE((uint32_t)ld_tss_base) | SEGMENT_DESCRIPTOR_LIMIT(sizeof(tss_t) - 1) \
+   | TSS_SEGMENT_ACCESS_BYTE | TSS_SEGMENT_FLAGS)
 
 _Static_assert(KERNEL_CODE_SEGMENT_ACCESS_BYTE == ((uint64_t)0x9A << 40),
                "kernel code segment access byte");
-_Static_assert(KERNEL_CODE_SEGMENT_FLAGS == ((uint64_t)0xC << 52),
-               "kernel code segment flags");
+_Static_assert(KERNEL_CODE_SEGMENT_FLAGS == ((uint64_t)0xC << 52), "kernel code segment flags");
 _Static_assert(KERNEL_DATA_SEGMENT_ACCESS_BYTE == ((uint64_t)0x92 << 40),
                "kernel data segment access byte");
-_Static_assert(KERNEL_DATA_SEGMENT_FLAGS == ((uint64_t)0xC << 52),
-               "kernel data segment flags");
+_Static_assert(KERNEL_DATA_SEGMENT_FLAGS == ((uint64_t)0xC << 52), "kernel data segment flags");
 _Static_assert(USER_CODE_SEGMENT_ACCESS_BYTE == ((uint64_t)0xFA << 40),
                "user code segment access byte");
-_Static_assert(USER_CODE_SEGMENT_FLAGS == ((uint64_t)0xC << 52),
-               "user code segment flags");
+_Static_assert(USER_CODE_SEGMENT_FLAGS == ((uint64_t)0xC << 52), "user code segment flags");
 _Static_assert(USER_DATA_SEGMENT_ACCESS_BYTE == ((uint64_t)0xF2 << 40),
                "user data segment access byte");
-_Static_assert(USER_DATA_SEGMENT_FLAGS == ((uint64_t)0xC << 52),
-               "user data segment flags");
-_Static_assert(TSS_SEGMENT_ACCESS_BYTE == ((uint64_t)0x89 << 40),
-               "TSS segment access byte");
+_Static_assert(USER_DATA_SEGMENT_FLAGS == ((uint64_t)0xC << 52), "user data segment flags");
+_Static_assert(TSS_SEGMENT_ACCESS_BYTE == ((uint64_t)0x89 << 40), "TSS segment access byte");
 _Static_assert(TSS_SEGMENT_FLAGS == ((uint64_t)0x0 << 52), "TSS segment flags");
 
-__attribute__((aligned(GDT_ALIGNMENT))) segment_descriptor_t gdt[6] = {
-    SEGMENT_DESCRIPTOR_NULL,        SEGMENT_DESCRIPTOR_KERNEL_CODE,
-    SEGMENT_DESCRIPTOR_KERNEL_DATA, SEGMENT_DESCRIPTOR_USER_CODE,
-    SEGMENT_DESCRIPTOR_USER_DATA,   0};
+__attribute__((aligned(GDT_ALIGNMENT))) segment_descriptor_t gdt[6]
+  = {SEGMENT_DESCRIPTOR_NULL,      SEGMENT_DESCRIPTOR_KERNEL_CODE, SEGMENT_DESCRIPTOR_KERNEL_DATA,
+     SEGMENT_DESCRIPTOR_USER_CODE, SEGMENT_DESCRIPTOR_USER_DATA,   0};
 
 void gdt_install_tss(void) { gdt[5] = SEGMENT_DESCRIPTOR_TSS; }
 

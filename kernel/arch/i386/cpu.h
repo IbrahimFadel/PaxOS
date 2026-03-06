@@ -7,19 +7,7 @@ __attribute__((always_inline)) static inline void set_sp(void *sp) {
   __asm__ __volatile__("mov %0, %%esp" ::"m"(sp) :);
 }
 
-__attribute__((noreturn)) static inline void hlt(void) {
-  __asm__ __volatile__("cli\n\t"
-                       "1:\n\t"
-                       "hlt\n\t"
-                       "jmp 1b\n\t"
-                       :
-                       :
-                       : "memory");
-  __builtin_unreachable();
-}
-
-__attribute__((always_inline)) static inline void
-set_pdbr(const void *page_directory) {
+__attribute__((always_inline)) static inline void set_pdbr(const void *page_directory) {
   __asm__ __volatile__("mov %0, %%cr3" ::"r"(page_directory) :);
 }
 
@@ -43,8 +31,10 @@ __attribute__((always_inline)) static inline void set_cr3(uint32_t cr3) {
   __asm__ __volatile__("mov %0, %%cr3" : : "r"(cr3) : "memory");
 }
 
-__attribute__((always_inline)) static inline void cli(void) {
-  __asm__ __volatile__("cli" :::);
-}
+__attribute__((always_inline)) static inline void cli(void) { __asm__ __volatile__("cli" :::); }
+
+__attribute__((always_inline)) static inline void sti(void) { __asm__ __volatile__("sti" :::); }
+
+__attribute__((always_inline)) static inline void hlt(void) { __asm__ __volatile__("hlt" :::); }
 
 #endif

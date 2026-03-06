@@ -1,7 +1,9 @@
 #include "gdt.h"
 #include "i386/cpu.h"
 #include "i386/mmap.h"
+#include "idt.h"
 #include "multiboot2/multiboot2.h"
+#include "pic.h"
 #include "stdlib.h"
 #include "tss.h"
 #include <pax/tty.h>
@@ -9,7 +11,7 @@
 #include <string.h>
 #include <sys/io.h>
 
-#define MBI_VA 0xD0000000
+#define MBI_VA      0xD0000000
 #define SHSTRTAB_VA 0xD0002000
 
 void map_phys(uint32_t pa, uint32_t va);
@@ -35,13 +37,18 @@ void kmain(uint32_t mb2_magic, uint32_t mb2_info_pa) {
   tss_load_segment_registers();
   tss_load();
 
+  idt_init();
+  idt_load();
+  pic_remap(0x20, 0x28);
+  pic_unmask_all();
+  sti();
+
   map_phys(mb2_info_pa & ~0xFFF, MBI_VA);
   map_phys((mb2_info_pa & ~0xFFF) + PAGE_SIZE, MBI_VA + PAGE_SIZE);
   uint32_t mbi_addr = (MBI_VA + (mb2_info_pa & 0xFFF));
   multiboot2_info_parse((multiboot2_boot_info_t *)mbi_addr);
 
-  for (;;) {
-  }
+  for (;;) {}
 }
 
 void map_phys(uint32_t pa, uint32_t va) {
@@ -54,8 +61,7 @@ void map_phys(uint32_t pa, uint32_t va) {
   if (!(pd[pd_idx] & PAGE_PRESENT)) {
     // allocate a page for the new page table
     // for now, use a static buffer since you don't have a heap yet
-    static uint8_t pt_storage[PAGE_TABLE_SIZE * PTE_SIZE]
-        __attribute__((aligned(PAGE_SIZE)));
+    static uint8_t pt_storage[PAGE_TABLE_SIZE * PTE_SIZE] __attribute__((aligned(PAGE_SIZE)));
     uint32_t pt_pa = (uint32_t)pt_storage - KERNEL_VA;
 
     memset(pt_storage, 0, sizeof(pt_storage));
