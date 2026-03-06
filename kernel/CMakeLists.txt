@@ -37,15 +37,10 @@ set(SERIAL_PORT 1234)
 
 add_custom_target(qemu
 	DEPENDS iso
+	USES_TERMINAL
 	COMMAND qemu-system-i386
 			-cdrom ${CMAKE_SOURCE_DIR}/build/pax_os.iso 
-			-serial tcp::${SERIAL_PORT},server,nowait
-)
-
-add_custom_target(serial
-    COMMAND nc localhost ${SERIAL_PORT}
-	USES_TERMINAL
-    COMMENT "Attaching to serial output..."
+			-serial pty
 )
 
 set_property(

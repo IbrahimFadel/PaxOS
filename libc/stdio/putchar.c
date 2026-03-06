@@ -10,7 +10,6 @@ int putchar(int c) {
   while (!(inb(COM1 + 5) & 0x20)) {
   }
   outb(c, COM1);
-  tty_putchar(c);
 #else
   // TODO: Implement stdio and the write system call.
 #endif
