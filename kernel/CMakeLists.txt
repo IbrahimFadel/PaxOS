@@ -36,7 +36,7 @@ add_dependencies(pax_kernel kernel_linker_script_preprocess sysroot_headers)
 
 add_custom_target(iso
 	COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/iso/boot/grub
-	COMMAND cp ${CMAKE_SOURCE_DIR}/iso/grub.cfg ${CMAKE_SOURCE_DIR}/iso/boot/grub/
+	COMMAND cp ${CMAKE_SOURCE_DIR}/grub.cfg ${CMAKE_SOURCE_DIR}/iso/boot/grub/
 	COMMAND cp $<TARGET_FILE:pax_kernel> ${CMAKE_SOURCE_DIR}/iso/boot/
 	COMMAND grub-mkrescue -o ${CMAKE_SOURCE_DIR}/build/pax_os.iso ${CMAKE_SOURCE_DIR}/iso
 	DEPENDS pax_kernel
