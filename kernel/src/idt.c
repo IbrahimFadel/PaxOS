@@ -23,7 +23,11 @@ void invalid_tss_isr(void) {}
 void segment_not_present_isr(void) {}
 void stack_segment_fault_isr(void) {}
 void general_prot_isr(void) {}
-void page_fault_isr(void) {}
+void page_fault_isr(void) {
+  cli();
+  printf("page fault\n");
+  hlt();
+}
 void floating_point_error_isr(void) {}
 void alignment_check_isr(void) {}
 void machine_check_isr(void) {}

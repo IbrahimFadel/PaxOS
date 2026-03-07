@@ -2,12 +2,16 @@
 #include "i386/cpu.h"
 #include "i386/mmap.h"
 #include "idt.h"
+#include "mem/pmm.h"
+#include "mem/vmm.h"
 #include "multiboot2/multiboot2.h"
 #include "pic.h"
 #include "stdlib.h"
 #include "tss.h"
+#include <assert.h>
 #include <pax/tty.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/io.h>
 
@@ -48,6 +52,16 @@ void kmain(uint32_t mb2_magic, uint32_t mb2_info_pa) {
   uint32_t mbi_addr = (MBI_VA + (mb2_info_pa & 0xFFF));
   multiboot2_info_parse((multiboot2_boot_info_t *)mbi_addr);
 
+  pmm_init();
+
+  uintptr_t test_va = 0xC1000000;
+  void *page = pmm_alloc_page();
+  vmm_map_page(kernel_page_dir, (void *)test_va, page, PAGE_RW);
+
+  uint32_t *ptr = (uint32_t *)test_va;
+  *ptr = 0xDEADBEEF;
+  assert(*ptr == 0xDEADBEEF);
+
   for (;;) {}
 }
 
@@ -72,4 +86,15 @@ void map_phys(uint32_t pa, uint32_t va) {
   pt[pt_idx] = (pa & ~0xFFF) | PAGE_PRESENT | PAGE_RW;
 
   __asm__ __volatile__("invlpg %0" ::"m"(*(char *)va) : "memory");
+}
+
+__attribute__((noreturn)) void panic(const char *expr, const char *file, int line,
+                                     const char *func) {
+  cli();
+  tty_writestring("\n=== KERNEL PANIC ===\n");
+  printf("\n=== KERNEL PANIC ===\n");
+  printf("assertion failed: %s\n", expr);
+  printf("location: %s:%d (%s)\n", file, line, func);
+  hlt();
+  for (;;) {}
 }
