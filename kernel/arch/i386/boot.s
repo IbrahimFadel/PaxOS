@@ -10,17 +10,17 @@ kernel_stack_bottom:
 kernel_stack_top:
 
 .section .bss, "aw", @nobits
-.globl kernel_page_dir
+.globl boot_page_dir
 
 .align PAGE_SIZE
-kernel_page_dir:
+boot_page_dir:
 	.skip PTE_SIZE * PAGE_TABLE_SIZE
 kernel_page_table:
 	.skip PTE_SIZE * PAGE_TABLE_SIZE
 
 .section .multiboot2.text, "a"
 .globl _start
-.extern _kernel_start, ld_kernel_end
+.extern _kernel_start, _kernel_end
 _start:
 	mov esi, 0
 	mov edi, offset kernel_page_table - KERNEL_VA
@@ -29,7 +29,7 @@ _start:
 	# put all kernel code into `kernel_page_table`
 	cmp esi, offset KERNEL_START
 	jl .map_inc
-	cmp esi, offset ld_kernel_end - KERNEL_VA
+	cmp esi, offset _kernel_end - KERNEL_VA
 	jge .map_finish
 
 	# mark address as present and store in page table
@@ -44,14 +44,14 @@ _start:
 	# map VGA to last entry
 	mov dword ptr [kernel_page_table - KERNEL_VA + (PAGE_TABLE_SIZE - 1) * PTE_SIZE], VGA_BUF_PHY_ADDR | PAGE_PRESENT | PAGE_RW
 	# identity map PD[0] to kernel PT, that way we can fetch the next instruction after enabling paging
-	mov dword ptr [kernel_page_dir - KERNEL_VA], offset kernel_page_table - KERNEL_VA + (PAGE_PRESENT | PAGE_RW)
+	mov dword ptr [boot_page_dir - KERNEL_VA], offset kernel_page_table - KERNEL_VA + (PAGE_PRESENT | PAGE_RW)
 	# map PD[768] to kernel PT. 768 = KERNEL_VA / PAGE_SIZE / PAGE_TABLE_SIZE
-	mov dword ptr [kernel_page_dir - KERNEL_VA + (768 * PTE_SIZE)], offset kernel_page_table - KERNEL_VA + (PAGE_PRESENT | PAGE_RW)
+	mov dword ptr [boot_page_dir - KERNEL_VA + (768 * PTE_SIZE)], offset kernel_page_table - KERNEL_VA + (PAGE_PRESENT | PAGE_RW)
 	# map PD[1023] to PD[0]
-	mov dword ptr [kernel_page_dir - KERNEL_VA + (PAGE_TABLE_SIZE - 1) * PTE_SIZE], offset kernel_page_dir - KERNEL_VA + (PAGE_PRESENT | PAGE_RW)
+	mov dword ptr [boot_page_dir - KERNEL_VA + (PAGE_TABLE_SIZE - 1) * PTE_SIZE], offset boot_page_dir - KERNEL_VA + (PAGE_PRESENT | PAGE_RW)
 
 	# set Page Directory Base Register
-	mov ecx, offset kernel_page_dir - KERNEL_VA
+	mov ecx, offset boot_page_dir - KERNEL_VA
 	mov cr3, ecx
 
 	# enable paging and write protect 
@@ -66,11 +66,11 @@ _start:
 .extern kmain
 higher_half:
 	# undo identity mapping
-	mov dword ptr [kernel_page_dir], 0
+	mov dword ptr [boot_page_dir], 0
 
 	# flush TLB after unmapping identity mapping
 	# tbh im not 100% sure if i did the `invlpg` instr correctlu, the mov is safer... because i'm an idiot
-	# invlpg [kernel_page_dir]
+	# invlpg [boot_page_dir]
 	mov ecx, cr3
 	mov cr3, ecx
 

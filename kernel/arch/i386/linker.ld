@@ -39,5 +39,5 @@ SECTIONS {
 		KEEP(*(.bootstrap_stack))
 	}
 
-    PROVIDE(ld_kernel_end = .);
+    PROVIDE(_kernel_end = .);
 }
