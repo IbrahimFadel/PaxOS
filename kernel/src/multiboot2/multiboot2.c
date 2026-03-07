@@ -1,6 +1,10 @@
-#include "multiboot2.h"
+#include "multiboot2/multiboot2.h"
+#include "i386/mmap.h"
+#include "mem/bootstrap.h"
+#include "mem/pmm.h"
+#include <assert.h>
 #include <stdint.h>
-#include <stdio.h>
+#include <string.h>
 
 MULTIBOOT2_DATA_SECTION multiboot2_header_t header
   = {.magic = MULTIBOOT2_HEADER_MAGIC,
@@ -9,57 +13,36 @@ MULTIBOOT2_DATA_SECTION multiboot2_header_t header
      .checksum = MULTIBOOT2_HEADER_CHECKSUM(MULTIBOOT2_ARCH_32BIT_PROT, sizeof(header)),
      .tags = {{0}}};
 
-const char *multiboot2_mmap_type_to_str(multiboot2_mmap_entry_type_t mmap_type) {
-  //   assert(mmap_type >= MULTIBOOT2_MMAP_AVAILABLE &&
-  //  mmap_type <= MULTIBOOT2_MMAP_BADRAM);
-  switch (mmap_type) {
-  case MULTIBOOT2_MMAP_AVAILABLE:        return "AVAILABLE";
-  case MULTIBOOT2_MMAP_RESERVED:         return "RESERVED";
-  case MULTIBOOT2_MMAP_ACPI_RECLAIMABLE: return "ACPI RECLAIMABLE";
-  case MULTIBOOT2_MMAP_NVS:              return "NVS";
-  case MULTIBOOT2_MMAP_BADRAM:           return "BADRAM";
-  }
-  return "UNKNOWN";
+void multiboot2_map(const multiboot2_boot_info_t *mbi_pa) {
+  bootstrap_mem_map_page((void *)BOOTSTRAP_MAP_BASE, (void *)((uintptr_t)mbi_pa & ~0xFFF));
+  bootstrap_mem_map_page((void *)(BOOTSTRAP_MAP_BASE + PAGE_SIZE),
+                         (void *)(((uintptr_t)mbi_pa & ~0xFFF) + PAGE_SIZE));
 }
 
-void multiboot2_info_parse(multiboot2_boot_info_t *mbi) {
+void multiboot2_unmap(void) {
+  bootstrap_mem_unmap_page((void *)BOOTSTRAP_MAP_BASE);
+  bootstrap_mem_unmap_page((void *)(BOOTSTRAP_MAP_BASE + PAGE_SIZE));
+}
+
+void multiboot2_info_parse(boot_info_t *boot_info, const multiboot2_boot_info_t *mbi) {
   uint32_t size = mbi->total_size;
   multiboot2_tag_t *tag;
-  printf("mbi size 0x%x\n", size);
   for (tag = (multiboot2_tag_t *)((uint32_t)mbi + 8); tag->type != MULTIBOOT2_TAG_END;
        tag = (multiboot2_tag_t *)((uint8_t *)tag + ((tag->size + 7) & ~7))) {
-    printf("tag 0x%x, size 0x%x\n", tag->type, tag->size);
     switch ((multiboot2_tag_type_t)tag->type) {
-    case MULTIBOOT2_TAG_END: break;
-    case MULTIBOOT2_TAG_BOOT_COMMAND_LINE:
-      printf("boot command line = \"%s\"\n", tag->boot_cmd_line.str);
-      break;
+    case MULTIBOOT2_TAG_END:               break;
+    case MULTIBOOT2_TAG_BOOT_COMMAND_LINE: break;
     case MULTIBOOT2_TAG_BOOTLOADER_NAME:
-      printf("bootloader name = \"%s\"\n", tag->bootloader_name.str);
+      strncpy(boot_info->bootloader_name, (const char *)tag->bootloader_name.str,
+              BOOTLOADER_NAME_MAX_LEN);
       break;
-    case MULTIBOOT2_TAG_MODULES: break;
-    case MULTIBOOT2_TAG_BASIC_MEM_INFO:
-      printf("mem lower = %x, mem upper = %x\n", tag->basic_mem_info.mem_lower,
-             tag->basic_mem_info.mem_upper);
-      break;
-    case MULTIBOOT2_TAG_BIOS_BOOT_DEVICE:
-      printf("bios dev = %d, partition = %d, subpartition = %d\n", tag->bios_boot_dev.biosdev,
-             tag->bios_boot_dev.partition, tag->bios_boot_dev.sub_partition);
-      break;
-    case MULTIBOOT2_TAG_MEM_MAP: {
-      printf("memmap:\nentry size = %d, entry version = %d\n", tag->mem_map.entry_size,
-             tag->mem_map.entry_version);
-      multiboot2_tag_mem_map_entry_t *mmap;
-      for (mmap = tag->mem_map.entries; (uint8_t *)mmap < (uint8_t *)tag + tag->size;
-           mmap
-           = (multiboot2_tag_mem_map_entry_t *)((unsigned long)mmap + tag->mem_map.entry_size)) {
-        printf(
-          " base_addr = 0x%x%x,"
-          " length = 0x%x%x, type = %s\n",
-          (unsigned)(mmap->base_addr >> 32), (unsigned)(mmap->base_addr & 0xffffffff),
-          (unsigned)(mmap->length >> 32), (unsigned)(mmap->length & 0xffffffff),
-          multiboot2_mmap_type_to_str(mmap->type));
-      }
+    case MULTIBOOT2_TAG_MODULES:          break;
+    case MULTIBOOT2_TAG_BASIC_MEM_INFO:   break;
+    case MULTIBOOT2_TAG_BIOS_BOOT_DEVICE: break;
+    case MULTIBOOT2_TAG_MEM_MAP:          {
+      boot_info->num_mmap_entries
+        = (tag->size - (4 * sizeof(uint32_t))) / sizeof(multiboot2_tag_mem_map_entry_t);
+      boot_info->mmap_entries = tag->mem_map.entries;
       break;
     }
     case MULTIBOOT2_TAG_VBE_INFO:      break;
@@ -69,8 +52,8 @@ void multiboot2_info_parse(multiboot2_boot_info_t *mbi) {
       multiboot2_tag_framebuffer_info_t *tagfb = &tag->framebuffer_info;
       void *fb = (void *)(uint32_t)tagfb->addr;
 
-      printf("framebuf type = %d, width = %d, height = %d\n", tagfb->type, tagfb->width,
-             tagfb->height);
+      // printf("framebuf type = %d, width = %d, height = %d\n", tagfb->type, tagfb->width,
+      //        tagfb->height);
 
       switch (tagfb->type) {
       case MULTIBOOT2_FRAMEBUFFER_TYPE_INDEXED: {
@@ -127,13 +110,15 @@ void multiboot2_info_parse(multiboot2_boot_info_t *mbi) {
       break;
     }
     case MULTIBOOT2_TAG_APM_TABLE:
-      printf("APM table:\nversion = %d, cseg = %d, offset = %d\n", tag->apm_table.version,
-             tag->apm_table.cseg, tag->apm_table.offset);
+      // printf("APM table:\nversion = %d, cseg = %d, offset = %d\n", tag->apm_table.version,
+      //  tag->apm_table.cseg, tag->apm_table.offset);
       break;
     case MULTIBOOT2_TAG_SYS_TABLE_PTR_32BIT:
     case MULTIBOOT2_TAG_SYS_TABLE_PTR_64BIT:
-    case MULTIBOOT2_TAG_SMBIOS_TABLES:                    break;
-    case MULTIBOOT2_TAG_ACPI_OLD_RSDP:                    printf("ACPI old RSDP: %d\n", tag->acpi_old_rsdp); break;
+    case MULTIBOOT2_TAG_SMBIOS_TABLES:       break;
+    case MULTIBOOT2_TAG_ACPI_OLD_RSDP:
+      //  printf("ACPI old RSDP: %d\n", tag->acpi_old_rsdp);
+      break;
     case MULTIBOOT2_TAG_ACPI_NEW_RSDP:
     case MULTIBOOT2_TAG_NET_INFO:
     case MULTIBOOT2_TAG_EFI_MEM_MAP:
@@ -144,5 +129,17 @@ void multiboot2_info_parse(multiboot2_boot_info_t *mbi) {
     }
   }
   tag = (multiboot2_tag_t *)((uint8_t *)tag + ((tag->size + 7) & ~7));
-  printf("Total mbi size 0x%x\n", (uint32_t)tag - (uint32_t)mbi);
+  // printf("Total mbi size 0x%x\n", (uint32_t)tag - (uint32_t)mbi);
+}
+
+const char *multiboot2_mmap_type_to_str(multiboot2_mmap_entry_type_t mmap_type) {
+  assert(mmap_type >= MULTIBOOT2_MMAP_AVAILABLE && mmap_type <= MULTIBOOT2_MMAP_BADRAM);
+  switch (mmap_type) {
+  case MULTIBOOT2_MMAP_AVAILABLE:        return "AVAILABLE";
+  case MULTIBOOT2_MMAP_RESERVED:         return "RESERVED";
+  case MULTIBOOT2_MMAP_ACPI_RECLAIMABLE: return "ACPI RECLAIMABLE";
+  case MULTIBOOT2_MMAP_NVS:              return "NVS";
+  case MULTIBOOT2_MMAP_BADRAM:           return "BADRAM";
+  }
+  return "UNKNOWN";
 }

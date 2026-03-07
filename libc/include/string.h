@@ -14,6 +14,8 @@ extern "C" {
   void *memset(void *, int, size_t);
   size_t strlen(const char *);
   char *strcpy(char *destination, const char *source);
+  char *strncpy(char *destination, const char *source, size_t num);
+  size_t strnlen(const char *s, size_t maxlen);
   char *strrev(char *str);
 
 #ifdef __cplusplus

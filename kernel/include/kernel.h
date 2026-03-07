@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-void kmain(uint32_t mb2_magic, uint32_t mb2_info_pa);
+void kmain(uint32_t mb2_magic, uint32_t mbi_pa);
 
 #endif

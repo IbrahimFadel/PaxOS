@@ -7,12 +7,17 @@ set(CMAKE_C_FLAGS_RELEASE "-O2")
 
 add_subdirectory(${ARCH_DIR})
 add_subdirectory(lib/logging)
-add_subdirectory(lib/multiboot2)
 
 set(C_SRCS
 	src/interrupts/isr.c
 	src/interrupts/idt.c
 	src/interrupts/interrupts.s
+
+	src/mem/bootstrap.c
+	src/mem/pmm.c
+	src/mem/vmm.c
+
+	src/multiboot2/multiboot2.c
 
 	src/gdt.c
 	src/kernel.c
@@ -20,7 +25,6 @@ set(C_SRCS
 	src/tss.c
 
 	$<TARGET_OBJECTS:i386>
-	$<TARGET_OBJECTS:multiboot2>
 )
 
 add_executable(pax_kernel)

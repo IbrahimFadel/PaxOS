@@ -1,21 +1,20 @@
-#ifndef __KERNEL_LIB_MULTIBOOT2_H__
-#define __KERNEL_LIB_MULTIBOOT2_H__
+#ifndef KERNEL_LIB_MULTIBOOT2_H
+#define KERNEL_LIB_MULTIBOOT2_H
 
 #include <stdint.h>
 
-#define MULTIBOOT2_DATA_SECTION                                                \
-  __attribute__((used, section(".multiboot2.data")))
-#define MULTIBOOT2_HEADER_MAGIC 0xE85250D6
+#define MULTIBOOT2_DATA_SECTION          __attribute__((used, section(".multiboot2.data")))
+#define MULTIBOOT2_HEADER_MAGIC          0xE85250D6
 #define MULTIBOOT2_SUCCESSFUL_BOOT_MAGIC 0x36d76289
-#define MULTIBOOT2_NUM_TAGS 1
-#define MULTIBOOT2_HEADER_CHECKSUM(__MULTIBOOT2_ARCH__, __HEADER_SIZE__)       \
+#define MULTIBOOT2_NUM_TAGS              1
+#define MULTIBOOT2_HEADER_CHECKSUM(__MULTIBOOT2_ARCH__, __HEADER_SIZE__) \
   (-(MULTIBOOT2_HEADER_MAGIC + __MULTIBOOT2_ARCH__ + __HEADER_SIZE__))
 
-#define SHT_NULL 0     // inactive
+#define SHT_NULL     0 // inactive
 #define SHT_PROGBITS 1 // code/data
-#define SHT_SYMTAB 2   // symbol table
-#define SHT_STRTAB 3   // string table
-#define SHT_NOBITS 8   // .bss
+#define SHT_SYMTAB   2 // symbol table
+#define SHT_STRTAB   3 // string table
+#define SHT_NOBITS   8 // .bss
 
 typedef struct {
   uint32_t name;
@@ -202,7 +201,17 @@ typedef struct {
   uint32_t reserved;
 } multiboot2_boot_info_t;
 
+#define BOOTLOADER_NAME_MAX_LEN 32
+
+typedef struct {
+  char bootloader_name[BOOTLOADER_NAME_MAX_LEN];
+  multiboot2_tag_mem_map_entry_t *mmap_entries;
+  int num_mmap_entries;
+} boot_info_t;
+
 const char *multiboot2_mmap_type_to_str(multiboot2_mmap_entry_type_t mmap_type);
-void multiboot2_info_parse(multiboot2_boot_info_t *mbi);
+void multiboot2_info_parse(boot_info_t *boot_info, const multiboot2_boot_info_t *mbi);
+void multiboot2_map(const multiboot2_boot_info_t *mbi_pa);
+void multiboot2_unmap(void);
 
 #endif

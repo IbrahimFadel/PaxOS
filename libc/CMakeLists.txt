@@ -21,6 +21,8 @@ add_library(klibc STATIC
     string/memset.c
     string/strcpy.c
     string/strlen.c
+    string/strncpy.c
+    string/strnlen.c
     string/strrev.c
 )
 target_include_directories(klibc PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
