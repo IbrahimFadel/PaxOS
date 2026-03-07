@@ -49,7 +49,9 @@ void kmain(uint32_t mb2_magic, uint32_t mb2_info_pa) {
   uint32_t mbi_addr = (MBI_VA + (mb2_info_pa & 0xFFF));
   multiboot2_info_parse((multiboot2_boot_info_t *)mbi_addr);
 
-  for (;;) {}
+  for (;;) {
+    hlt();
+  }
 }
 
 void map_phys(uint32_t pa, uint32_t va) {

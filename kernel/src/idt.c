@@ -8,7 +8,9 @@ static __attribute__((aligned(IDT_ALIGNMENT))) gate_descriptor_t idt[IDT_NUM_GAT
 void div_err_isr(void) {
   printf("fault: division by 0\n");
   cli();
-  hlt();
+  for (;;) {
+    hlt();
+  }
 }
 void debug_exception_isr(void) {}
 void nmi_int_isr(void) {}
@@ -23,7 +25,13 @@ void invalid_tss_isr(void) {}
 void segment_not_present_isr(void) {}
 void stack_segment_fault_isr(void) {}
 void general_prot_isr(void) {}
-void page_fault_isr(void) {}
+void page_fault_isr(void) {
+  printf("fault: page fault\n");
+  cli();
+  for (;;) {
+    hlt();
+  }
+}
 void floating_point_error_isr(void) {}
 void alignment_check_isr(void) {}
 void machine_check_isr(void) {}

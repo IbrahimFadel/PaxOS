@@ -10,12 +10,12 @@ void com1_init(void) {
   outb(0x0B, COM1 + 4); // IRQs enabled, RTS/DSR set
 }
 
-void outb(uint8_t val, port_t port) {
-  __asm__ __volatile__("outb %b0, %w1" : : "a"(val), "Nd"(port) : "memory");
+void outb(uint8_t port, port_t value) {
+  __asm__ __volatile__("outb %b0, %w1" : : "a"(value), "Nd"(port) : "memory");
 }
 
-void outw(uint16_t val, port_t port) {
-  __asm__ __volatile__("outw %w0, %w1" : : "a"(val), "Nd"(port) : "memory");
+void outw(uint16_t port, port_t value) {
+  __asm__ __volatile__("outw %w0, %w1" : : "a"(value), "Nd"(port) : "memory");
 }
 
 uint8_t inb(port_t port) {

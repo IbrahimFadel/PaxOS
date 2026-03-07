@@ -20,12 +20,12 @@ extern "C" {
   uint32_t inl(port_t port);
   uint32_t inl_p(port_t port);
 
-  void outb(uint8_t value, uint16_t port);
-  void outb_p(uint8_t value, port_t port);
-  void outw(uint16_t value, port_t port);
-  void outw_p(uint16_t value, port_t port);
-  void outl(uint32_t value, port_t port);
-  void outl_p(uint32_t value, port_t port);
+  void outb(uint8_t port, uint16_t value);
+  void outb_p(uint8_t port, port_t value);
+  void outw(uint16_t port, port_t value);
+  void outw_p(uint16_t port, port_t value);
+  void outl(uint32_t port, port_t value);
+  void outl_p(uint32_t port, port_t value);
 
   static inline void io_wait(void) { outb(0x80, 0); }
 

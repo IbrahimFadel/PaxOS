@@ -7,7 +7,6 @@ set(CMAKE_C_FLAGS_RELEASE "-O2")
 
 add_subdirectory(${ARCH_DIR})
 add_subdirectory(lib/logging)
-add_subdirectory(lib/memory)
 add_subdirectory(lib/multiboot2)
 
 set(C_SRCS
@@ -24,7 +23,7 @@ set(C_SRCS
 add_executable(pax_kernel)
 target_sources(pax_kernel PRIVATE ${C_SRCS})
 target_include_directories(pax_kernel PRIVATE include arch lib)
-target_link_libraries(pax_kernel PRIVATE klibc memory logging)
+target_link_libraries(pax_kernel PRIVATE klibc logging)
 target_link_options(pax_kernel PRIVATE -T ${KERNEL_LINKER_FILE})
 add_dependencies(pax_kernel kernel_linker_script_preprocess sysroot_headers)
 
@@ -55,6 +54,13 @@ add_custom_target(qemu-gui
 	COMMAND qemu-system-i386
 			-cdrom ${CMAKE_SOURCE_DIR}/build/pax_os.iso 
 			-serial pty
+)
+
+add_custom_target(debug
+	DEPENDS iso
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	USES_TERMINAL
+	COMMAND bochs
 )
 
 set_property(
