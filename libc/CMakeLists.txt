@@ -6,9 +6,7 @@ add_library(klibc STATIC
     stdio/printf.c
     stdio/putchar.c
     stdio/puts.c
-    stdio/snprintf.c
     stdio/sprintf.c
-    stdio/vsnprintf.c
 
     stdlib/abort.c
     stdlib/itoa.c

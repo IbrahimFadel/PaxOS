@@ -1,5 +1,5 @@
-#ifndef KLIBC_STDLIB_H
-#define KLIBC_STDLIB_H
+#ifndef _STDLIB_H
+#define _STDLIB_H 1
 
 #include <sys/cdefs.h>
 
@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-  __attribute__((__noreturn__)) void abort(void);
+__attribute__((__noreturn__)) void abort(void);
 
-  char *itoa(int value, char *str, int base);
-  char *utoa(unsigned int value, char *str, int base);
+char *itoa(int value, char *str, int base);
+char *utoa(unsigned int value, char *str, int base);
 
 #ifdef __cplusplus
 }
