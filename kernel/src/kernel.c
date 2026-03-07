@@ -49,7 +49,8 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   *ptr = 0xDEADBEEF;
   assert(*ptr == 0xDEADBEEF);
 
-  int x = 1 / 0;
+  vmm_unmap_page(kernel_page_dir, ptr);
+  *ptr = 0xFF00FF00;
 
   for (;;) {}
 }

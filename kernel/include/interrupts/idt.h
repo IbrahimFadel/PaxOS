@@ -13,20 +13,15 @@
    | (((gate_descriptor_t)(PRIV) & 0x3) << 45) | ((gate_descriptor_t)1 << 47)                     \
    | (((gate_descriptor_t)(uint32_t)(OFFSET) & 0xFFFF0000) << 32))
 
-#define GATE_TYPE_TASK       0x5
-#define GATE_TYPE_INT_16BIT  0x6
-#define GATE_TYPE_TRAP_16BIT 0x7
-#define GATE_TYPE_INT_32BIT  0xE
-#define GATE_TYPE_TRAP_32BIT 0xF
+typedef enum {
+  GATE_TYPE_TASK = 0x5,
+  GATE_TYPE_INT_16BIT = 0x6,
+  GATE_TYPE_TRAP_16BIT = 0x7,
+  GATE_TYPE_INT_32BIT = 0xE,
+  GATE_TYPE_TRAP_32BIT = 0xF
+} gate_type_t;
 
 typedef uint64_t gate_descriptor_t;
-// typedef struct {
-//   uint16_t offset_low;
-//   uint16_t selector;
-//   uint8_t zero;
-//   uint8_t type_attr;
-//   uint16_t offset_high;
-// } __attribute__((packed)) gate_descriptor_t;
 
 typedef enum {
   IVEC_DIV_ERR = 0,

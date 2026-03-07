@@ -3,6 +3,8 @@
 
 #include "interrupts/idt.h"
 
+#define NUM_ISRS 32
+
 void div_err_isr(const registers_t *r);
 void debug_exception_isr(const registers_t *r);
 void nmi_int_isr(const registers_t *r);
@@ -58,5 +60,11 @@ extern void isr28(void);
 extern void isr29(void);
 extern void isr30(void);
 extern void isr31(void);
+
+typedef void (*isr_t)(const registers_t *reg);
+
+void isrs_zero(void);
+void register_isr(interrupt_vector_t num, isr_t isr);
+void isr_handler(const registers_t *reg);
 
 #endif
