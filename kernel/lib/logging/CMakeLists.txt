@@ -7,4 +7,4 @@ set(C_SRCS
 add_library(logging STATIC ${C_SRCS})
 
 target_include_directories(logging PRIVATE )
-target_link_libraries(logging PRIVATE )
+target_link_libraries(logging PRIVATE klibc)

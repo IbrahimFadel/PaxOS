@@ -10,7 +10,10 @@ add_subdirectory(lib/logging)
 add_subdirectory(lib/multiboot2)
 
 set(C_SRCS
-	src/idt.c
+	src/interrupts/isr.c
+	src/interrupts/idt.c
+	src/interrupts/interrupts.s
+
 	src/gdt.c
 	src/kernel.c
 	src/pic.c

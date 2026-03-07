@@ -1,7 +1,7 @@
 #include "gdt.h"
 #include "i386/cpu.h"
 #include "i386/mmap.h"
-#include "idt.h"
+#include "interrupts/idt.h"
 #include "multiboot2/multiboot2.h"
 #include "pic.h"
 #include "stdlib.h"
@@ -41,7 +41,7 @@ void kmain(uint32_t mb2_magic, uint32_t mb2_info_pa) {
   idt_init();
   idt_load();
   pic_remap(0x20, 0x28);
-  pic_unmask_all();
+  pic_mask_all();
   sti();
 
   map_phys(mb2_info_pa & ~0xFFF, MBI_VA);
@@ -49,9 +49,11 @@ void kmain(uint32_t mb2_magic, uint32_t mb2_info_pa) {
   uint32_t mbi_addr = (MBI_VA + (mb2_info_pa & 0xFFF));
   multiboot2_info_parse((multiboot2_boot_info_t *)mbi_addr);
 
-  for (;;) {
-    hlt();
-  }
+  // *(uint8_t *)0x400 = 10;
+
+  int x = 10 / 0;
+
+  for (;;) {}
 }
 
 void map_phys(uint32_t pa, uint32_t va) {

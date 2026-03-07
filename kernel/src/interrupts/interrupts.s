@@ -1,0 +1,138 @@
+.intel_syntax noprefix
+
+.macro ISR_NOERRCODE num
+    .global isr\num
+    isr\num:
+        cli
+        push 0
+        push \num
+        jmp isr_common_stub
+.endm
+
+.macro ISR_ERRCODE num
+    .global isr\num
+    isr\num:
+        cli
+        push \num
+        jmp isr_common_stub
+.endm
+
+.macro IRQ_FOO num foo
+    .global irq\num
+    irq\num:
+        cli
+        push 0
+        push \foo
+        jmp irq_common_stub
+.endm
+
+ISR_NOERRCODE 0
+ISR_NOERRCODE 1
+ISR_NOERRCODE 2
+ISR_NOERRCODE 3
+ISR_NOERRCODE 4
+ISR_NOERRCODE 5
+ISR_NOERRCODE 6
+ISR_NOERRCODE 7
+
+ISR_ERRCODE 8
+ISR_NOERRCODE 9 
+ISR_ERRCODE 10
+ISR_ERRCODE 11
+ISR_ERRCODE 12
+ISR_ERRCODE 13
+ISR_ERRCODE 14
+ISR_NOERRCODE 15
+ISR_NOERRCODE 16
+ISR_NOERRCODE 17
+ISR_NOERRCODE 18
+ISR_NOERRCODE 19
+ISR_NOERRCODE 20
+ISR_NOERRCODE 21
+ISR_NOERRCODE 22
+ISR_NOERRCODE 23
+ISR_NOERRCODE 24
+ISR_NOERRCODE 25
+ISR_NOERRCODE 26
+ISR_NOERRCODE 27
+ISR_NOERRCODE 28
+ISR_NOERRCODE 29
+ISR_NOERRCODE 30
+ISR_NOERRCODE 31
+ISR_NOERRCODE 128
+ISR_NOERRCODE 177
+
+IRQ_FOO   0,    32
+IRQ_FOO   1,    33
+IRQ_FOO   2,    34
+IRQ_FOO   3,    35
+IRQ_FOO   4,    36
+IRQ_FOO   5,    37
+IRQ_FOO   6,    38
+IRQ_FOO   7,    39
+IRQ_FOO   8,    40
+IRQ_FOO   9,    41
+IRQ_FOO  10,    42
+IRQ_FOO  11,    43
+IRQ_FOO  12,    44
+IRQ_FOO  13,    45
+IRQ_FOO  14,    46
+IRQ_FOO  15,    47
+
+.extern isr_handler
+isr_common_stub:
+    pusha
+    mov eax,ds
+    push eax
+    mov eax, cr2
+    push eax
+
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    push esp
+    call isr_handler
+
+    add esp, 8
+    pop ebx
+    mov ds, bx
+    mov es, bx
+    mov fs, bx
+    mov gs, bx
+
+    popa
+    add esp, 8
+    sti
+    iret
+
+.extern irq_handler
+irq_common_stub:
+    pusha
+    mov eax,ds
+    push eax
+    mov eax, cr2
+    push eax
+
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    push esp
+    call irq_handler
+
+    add esp, 8
+    pop ebx
+    mov ds, bx
+    mov es, bx
+    mov fs, bx
+    mov gs, bx
+
+    popa
+    add esp, 8
+    sti
+    iret

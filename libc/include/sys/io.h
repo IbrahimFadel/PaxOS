@@ -13,19 +13,35 @@ extern "C" {
 
   void com1_init(void);
 
-  uint8_t inb(port_t port);
   uint8_t inb_p(port_t port);
-  uint16_t inw(port_t port);
   uint16_t inw_p(port_t port);
   uint32_t inl(port_t port);
   uint32_t inl_p(port_t port);
 
-  void outb(uint8_t port, uint16_t value);
-  void outb_p(uint8_t port, port_t value);
-  void outw(uint16_t port, port_t value);
-  void outw_p(uint16_t port, port_t value);
-  void outl(uint32_t port, port_t value);
-  void outl_p(uint32_t port, port_t value);
+  void outb_p(port_t port, uint8_t value);
+  void outw_p(port_t port, uint16_t value);
+  void outl(port_t port, uint32_t value);
+  void outl_p(port_t port, uint32_t value);
+
+  static inline void outb(port_t port, uint8_t value) {
+    __asm__ volatile("outb %b0, %w1" : : "a"(value), "Nd"(port));
+  }
+
+  static inline void outw(port_t port, uint16_t value) {
+    __asm__ volatile("outw %w0, %w1" : : "a"(value), "Nd"(port));
+  }
+
+  static inline uint8_t inb(port_t port) {
+    uint8_t ret;
+    __asm__ volatile("inb %w1, %b0" : "=a"(ret) : "Nd"(port));
+    return ret;
+  }
+
+  static inline uint16_t inw(port_t port) {
+    uint16_t ret;
+    __asm__ volatile("inw %w1, %w0" : "=a"(ret) : "Nd"(port));
+    return ret;
+  }
 
   static inline void io_wait(void) { outb(0x80, 0); }
 

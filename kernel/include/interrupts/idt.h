@@ -1,9 +1,9 @@
-#ifndef KERNEL_IDT_H
-#define KERNEL_IDT_H
+#ifndef KERNEL_INTERRUPTS_IDT_H
+#define KERNEL_INTERRUPTS_IDT_H
 
 #include <stdint.h>
 
-#define IDT_ALIGNMENT        8
+#define IDT_ALIGNMENT        16
 #define IDT_NUM_GATES        256
 #define IDT_NUM_USER_DEFINED 224
 
@@ -20,6 +20,13 @@
 #define GATE_TYPE_TRAP_32BIT 0xF
 
 typedef uint64_t gate_descriptor_t;
+// typedef struct {
+//   uint16_t offset_low;
+//   uint16_t selector;
+//   uint8_t zero;
+//   uint8_t type_attr;
+//   uint16_t offset_high;
+// } __attribute__((packed)) gate_descriptor_t;
 
 typedef enum {
   IVEC_DIV_ERR = 0,
@@ -50,27 +57,13 @@ typedef struct __attribute__((packed)) {
   uint32_t offset;
 } idtr_t;
 
-void div_err_isr(void);
-void debug_exception_isr(void);
-void nmi_int_isr(void);
-void breakpoint_isr(void);
-void overflow_isr(void);
-void bound_range_exceeded_isr(void);
-void invalid_opcode_isr(void);
-void dev_not_available_isr(void);
-void double_fault_isr(void);
-void coprocessor_segment_overrun_isr(void);
-void invalid_tss_isr(void);
-void segment_not_present_isr(void);
-void stack_segment_fault_isr(void);
-void general_prot_isr(void);
-void page_fault_isr(void);
-void floating_point_error_isr(void);
-void alignment_check_isr(void);
-void machine_check_isr(void);
-void simd_floating_point_exception_isr(void);
-void virtualization_exception_isr(void);
-void control_protection_exception_isr(void);
+typedef struct {
+  uint32_t cr2;
+  uint32_t ds;
+  uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+  uint32_t int_no, err_code;
+  uint32_t eip, csm, eflags, useresp, ss;
+} registers_t;
 
 void idt_init(void);
 void idt_load(void);
