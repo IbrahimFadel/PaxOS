@@ -29,7 +29,6 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   idt_init();
   idt_load();
   pic_remap(0x20, 0x28);
-  pic_mask_all();
   sti();
 
   tty_writestring("PaxOS v0.0.1\n");
