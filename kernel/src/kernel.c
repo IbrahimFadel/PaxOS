@@ -8,6 +8,7 @@
 #include "tss.h"
 #include <pax/tty.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/io.h>
 
@@ -72,4 +73,16 @@ void map_phys(uint32_t pa, uint32_t va) {
   pt[pt_idx] = (pa & ~0xFFF) | PAGE_PRESENT | PAGE_RW;
 
   __asm__ __volatile__("invlpg %0" ::"m"(*(char *)va) : "memory");
+}
+
+__attribute__((noreturn)) void panic(const char *expr, const char *file, int line,
+                                     const char *func) {
+  cli();
+  tty_writestring("\n=== KERNEL PANIC ===\n");
+  printf("\n=== KERNEL PANIC ===\n");
+  printf("assertion failed: %s\n", expr);
+  printf("location: %s:%d (%s)\n", file, line, func);
+  for (;;) {
+    hlt();
+  }
 }

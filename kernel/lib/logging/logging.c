@@ -26,7 +26,7 @@ void log(log_level_t level, const char *fmt, ...) {
 
   // TODO: get timestamp
 
-  int len = snprintf(log_buf, sizeof(log_buf), "[%s] %s\r\n", level_str, msg_buf);
+  int len = snprintf(log_buf, sizeof(log_buf), "[%s] %s", level_str, msg_buf);
   assert(len <= MAX_LOG_LEN + 10);
   printf("%s", log_buf);
 }
