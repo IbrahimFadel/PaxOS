@@ -13,15 +13,32 @@ MULTIBOOT2_DATA_SECTION multiboot2_header_t header
      .checksum = MULTIBOOT2_HEADER_CHECKSUM(MULTIBOOT2_ARCH_32BIT_PROT, sizeof(header)),
      .tags = {{0}}};
 
+static int num_pages = 0;
+
 void multiboot2_map(const multiboot2_boot_info_t *mbi_pa) {
   bootstrap_mem_map_page((void *)BOOTSTRAP_MAP_BASE, (void *)((uintptr_t)mbi_pa & ~0xFFF));
-  bootstrap_mem_map_page((void *)(BOOTSTRAP_MAP_BASE + PAGE_SIZE),
-                         (void *)(((uintptr_t)mbi_pa & ~0xFFF) + PAGE_SIZE));
+
+  const multiboot2_boot_info_t *mbi
+    = (const multiboot2_boot_info_t *)(BOOTSTRAP_MAP_BASE + ((uint32_t)mbi_pa & 0xFFF));
+
+  uintptr_t offset = (uintptr_t)mbi_pa & 0xFFF;
+  uintptr_t size = offset + mbi->total_size;
+
+  num_pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
+
+  for (int i = 0; i < (num_pages - 1); i++) {
+    uintptr_t va = BOOTSTRAP_MAP_BASE + PAGE_SIZE * (i + 1);
+    uintptr_t pa = (((uintptr_t)mbi_pa & ~0xFFF) + PAGE_SIZE * (i + 1));
+    bootstrap_mem_map_page((void *)va, (void *)pa);
+  }
 }
 
 void multiboot2_unmap(void) {
-  bootstrap_mem_unmap_page((void *)BOOTSTRAP_MAP_BASE);
-  bootstrap_mem_unmap_page((void *)(BOOTSTRAP_MAP_BASE + PAGE_SIZE));
+  assert(num_pages);
+  for (int i = 0; i < num_pages; i++) {
+    uintptr_t va = BOOTSTRAP_MAP_BASE + PAGE_SIZE * i;
+    bootstrap_mem_unmap_page((void *)va);
+  }
 }
 
 void multiboot2_info_parse(boot_info_t *boot_info, const multiboot2_boot_info_t *mbi) {
