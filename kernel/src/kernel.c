@@ -2,7 +2,6 @@
 #include "i386/cpu.h"
 #include "i386/mmap.h"
 #include "interrupts/idt.h"
-#include "logging/logging.h"
 #include "mem/pmm.h"
 #include "mem/vmm.h"
 #include "multiboot2/multiboot2.h"
@@ -33,7 +32,10 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   pic_remap(0x20, 0x28);
   sti();
 
-  tty_writestring("PaxOS v0.0.1\n");
+  char os_name[256];
+  snprintf(os_name, sizeof(os_name) / sizeof(os_name[0]), "PaxOS v%d.%d.%d\n",
+           KCONFIG_VERSION_MAJOR, KCONFIG_VERSION_MINOR, KCONFIG_VERSION_PATCH);
+  tty_writestring(os_name);
 
   uint32_t mbi_va = (BOOTSTRAP_MAP_BASE + (mbi_pa & 0xFFF));
   boot_info_t boot_info;
