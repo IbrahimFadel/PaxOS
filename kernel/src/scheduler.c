@@ -3,6 +3,7 @@
 #include "logging/logging.h"
 #include "pic.h"
 #include "proc.h"
+#include "tasks/idle.h"
 #include <assert.h>
 
 __attribute__((naked)) static void switch_context(proc_t **old, proc_t **new);
@@ -10,15 +11,20 @@ __attribute__((naked)) static void switch_to_first(proc_t *next);
 
 static proc_t *current_proc = NULL;
 static proc_t *run_queue = NULL;
+static proc_t *idle_proc = NULL;
 
 void timer_irq(trap_frame_t *tf) {
   LOGT("timer_irq\n");
   pic_send_eoi(TIMER_IRQ);
-  if (current_proc && current_proc->started) { current_proc->tf = tf; }
+  if (current_proc) { current_proc->tf = tf; }
   schedule();
 }
 
-void scheduler_init(void) { pic_unmask_irq(TIMER_IRQ); }
+void scheduler_init(void) {
+  idle_proc = process_create(idle_task);
+  current_proc = idle_proc;
+  pic_unmask_irq(TIMER_IRQ);
+}
 
 void schedule(void) {
   proc_t *prev = current_proc;
@@ -32,18 +38,8 @@ void schedule(void) {
   current_proc = next;
 
   LOGT("switching context\n");
-  if (!prev) {
-    LOGD("switch_to_first: next=0x%x tf=0x%x\n", next, next->tf);
-    uint32_t *stack = (uint32_t *)next->tf;
-    LOGD("  entry=0x%x eflags=0x%x\n", stack[0], stack[1]);
-    LOGD("about to switch_to_first: cr3=0x%x esp=0x%x\n", next->page_dir, next->tf);
-    current_proc->started = true;
-    switch_to_first(next);
-    LOGD("returned from switch_to_first\n");
-  } else {
-    LOGD("switch_context: prev = 0x%x, next = 0x%x\n", prev, next);
-    switch_context(&prev, &next);
-  }
+  LOGD("switch_context: prev = 0x%x, next = 0x%x\n", prev, next);
+  switch_context(&prev, &next);
 }
 
 void scheduler_add(proc_t *proc) {
@@ -97,17 +93,4 @@ __attribute__((naked)) static void switch_context(proc_t **old, proc_t **new) {
     "ret\n"
     :
     : "i"(offsetof(proc_t, tf)), "i"(offsetof(proc_t, page_dir)));
-}
-
-__attribute__((naked)) static void switch_to_first(proc_t *next) {
-  __asm__ volatile(
-    "movl 4(%%esp), %%edx\n"
-    "movl %c0(%%edx), %%ecx\n"
-    "movl %%ecx, %%cr3\n"
-    "movl %c1(%%edx), %%esp\n"
-    "popal\n"
-    "popfl\n"
-    "ret\n"
-    :
-    : "i"(offsetof(proc_t, page_dir)), "i"(offsetof(proc_t, tf)));
 }

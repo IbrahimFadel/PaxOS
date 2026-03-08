@@ -22,6 +22,7 @@ set(C_SRCS
 
 	src/multiboot2/multiboot2.c
 
+	src/tasks/idle.c
 	src/tasks/task1.c
 	src/tasks/task2.c
 

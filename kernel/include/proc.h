@@ -29,7 +29,6 @@ typedef struct proc {
   trap_frame_t *tf;
   void *kernel_stack;
   proc_state_t state;
-  bool started;
   struct proc *next;
 } proc_t;
 
