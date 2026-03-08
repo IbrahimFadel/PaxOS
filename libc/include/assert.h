@@ -8,8 +8,13 @@ extern "C" {
 #ifdef __is_libk
   __attribute__((noreturn)) void panic(const char *expr, const char *file, int line,
                                        const char *func);
-  #define assert(EXPR)                                                                    \
-    (__builtin_expect(!(EXPR), 0) ? panic(#EXPR, __FILE__, __LINE__, __func__) : (void)0)
+  #ifdef KCONFIG_ENABLE_ASSERTIONS
+    #define assert(EXPR)                                                                    \
+      (__builtin_expect(!(EXPR), 0) ? panic(#EXPR, __FILE__, __LINE__, __func__) : (void)0)
+  #else
+    #define assert(EXPR) ((void)(EXPR))
+  #endif
+
 #endif
 
 #ifdef __cplusplus

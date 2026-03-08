@@ -32,6 +32,8 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   pic_remap(0x20, 0x28);
   sti();
 
+  assert(1 == 0);
+
   tty_writestring("PaxOS v0.0.1\n");
 
   uint32_t mbi_va = (BOOTSTRAP_MAP_BASE + (mbi_pa & 0xFFF));
