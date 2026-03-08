@@ -152,4 +152,20 @@ static inline bool intr_enabled(void) {
   return eflags & EFLAGS_IF;
 }
 
+static inline uint32_t irq_save(void) {
+  uint32_t flags;
+  __asm__ volatile(
+    "pushfl\n"
+    "pop %0\n"
+    "cli"
+    : "=r"(flags));
+  return flags;
+}
+
+static inline void irq_restore(uint32_t flags) {
+  __asm__ volatile(
+    "push %0\n"
+    "popf" ::"r"(flags));
+}
+
 #endif

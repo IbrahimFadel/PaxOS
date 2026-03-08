@@ -81,7 +81,7 @@ IRQ  15,    47
 
 .extern isr_handler
 isr_common_stub:
-    pusha
+    pushad
     mov eax,ds
     push eax
     mov eax, cr2
@@ -103,13 +103,13 @@ isr_common_stub:
     mov fs, bx
     mov gs, bx
 
-    popa
+    popad
     add esp, 8
     iret
 
 .extern irq_handler
 irq_common_stub:
-    pusha
+    pushad
     mov eax,ds
     push eax
     mov eax, cr2
@@ -131,6 +131,6 @@ irq_common_stub:
     mov fs, bx
     mov gs, bx
 
-    popa
+    popad
     add esp, 8
     iret

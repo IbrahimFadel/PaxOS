@@ -23,10 +23,19 @@ typedef uint32_t pid_t;
 
 typedef enum { PROC_RUNNING, PROC_READY, PROC_BLOCKED, PROC_ZOMBIE } proc_state_t;
 
+typedef struct __attribute__((packed)) {
+  uint32_t ebp;
+  uint32_t edi;
+  uint32_t esi;
+  uint32_t ebx;
+  uint32_t eip;
+} proc_context_t;
+
 typedef struct proc {
   uint32_t pid;
   page_table_t page_dir;
   trap_frame_t *tf;
+  proc_context_t *ctx;
   void *kernel_stack;
   proc_state_t state;
   struct proc *next;

@@ -66,6 +66,7 @@ add_custom_target(qemu
 	DEPENDS iso
 	USES_TERMINAL
 	COMMAND qemu-system-i386
+			# -s -S
 			-cdrom ${CMAKE_SOURCE_DIR}/build/pax_os.iso 
 			-serial pty
 			-nographic
@@ -75,6 +76,7 @@ add_custom_target(qemu-gui
 	DEPENDS iso
 	USES_TERMINAL
 	COMMAND qemu-system-i386
+			# -s -S
 			-cdrom ${CMAKE_SOURCE_DIR}/build/pax_os.iso 
 			-serial pty
 )

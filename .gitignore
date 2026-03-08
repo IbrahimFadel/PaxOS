@@ -3,3 +3,4 @@ build/
 iso/
 sysroot/
 kconfig.toml
+.gdbinit

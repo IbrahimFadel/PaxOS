@@ -2,11 +2,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
+volatile uint32_t task1_count = 0;
+
 void task1(void) {
   printf("task1 entry\n");
-  volatile uint64_t i = 0;
+  int i = 0;
   for (;;) {
-    if (i % 0x100000) { printf("task1 tick\n"); }
+    if (i % 0x100000 == 0) { task1_count++; }
     i++;
   }
 }
