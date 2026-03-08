@@ -11,8 +11,8 @@ __attribute__((naked)) static void switch_to_first(proc_t *next);
 static proc_t *current_proc = NULL;
 static proc_t *run_queue = NULL;
 
-void timer_isr(trap_frame_t *tf) {
-  LOGT("timer\n");
+void timer_irq(trap_frame_t *tf) {
+  LOGT("timer_irq\n");
   pic_send_eoi(TIMER_IRQ);
   if (current_proc && current_proc->started) { current_proc->tf = tf; }
   schedule();

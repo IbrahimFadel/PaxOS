@@ -72,7 +72,9 @@ void *kmalloc(size_t size) {
 
     slab_hdr_t *hdr = (slab_hdr_t *)va_base;
     hdr->bin_index = SLAB_BIN_LARGE;
+#ifdef KCONFIG_ENABLE_ASSERTIONS
     hdr->magic = SLAB_MAGIC;
+#endif
     hdr->num_pages = num_pages;
     return (void *)(hdr + 1);
   }

@@ -1,9 +1,7 @@
 #include "interrupts/idt.h"
-#include "i386/cpu.h"
 #include "interrupts/irq.h"
 #include "interrupts/isr.h"
 #include "gdt.h"
-#include "pic.h"
 #include "pit.h"
 #include "scheduler.h"
 
@@ -73,7 +71,7 @@ void idt_init(void) {
   register_isr(IVEC_PAGE_FAULT, page_fault_isr);
 
   pit_init(KCONFIG_TICK_RATE_HZ);
-  register_irq(TIMER_IRQ, timer_isr);
+  register_irq(TIMER_IRQ, timer_irq);
 }
 
 void idt_load(void) {
