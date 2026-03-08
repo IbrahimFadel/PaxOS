@@ -27,4 +27,3 @@ add_library(klibc STATIC
 )
 target_include_directories(klibc PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 add_dependencies(klibc sysroot_headers)
-target_compile_definitions(klibc PRIVATE ${KCONFIG_COMPILE_DEFS})
