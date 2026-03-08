@@ -3,13 +3,20 @@
 #include "i386/mmap_config.h"
 #include "ipc/spinlock.h"
 #include "logging/logging.h"
+#include "mem/pmm.h"
+#include "mem/vmm.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #define SLAB_MAGIC     0xDEADC0DE
 #define SLAB_MIN_SHIFT 5
+#define SLAB_BIN_LARGE 0xFF
+
+#define ALIGN_UP(x, align)   (((x) + (align) - 1) & ~((align) - 1))
+#define ALIGN_DOWN(x, align) ((x) & ~((align) - 1))
 
 typedef struct run {
   struct run *next;
@@ -39,9 +46,7 @@ typedef struct {
 
 static slab_bin_t bins[KCONFIG_KMALLOC_NUM_BINS];
 
-static void free_range(void *va_start, void *va_end);
 static size_t round_bin_size(size_t size);
-static void *kmalloc_page(void);
 static void kfree_page(void *va);
 static int size_to_bin(size_t size);
 static void slab_refill(slab_bin_t *bin);
@@ -55,14 +60,19 @@ void kmem_init(void) {
   kernel_pa_end = (uintptr_t)ld_kernel_end - KERNEL_VA;
   LOGD("kmem_init: kernel_pa_end=0x%x KERNEL_PHY_END=0x%x\n", kernel_pa_end, KERNEL_PHY_END);
   assert(kernel_pa_end <= KERNEL_PHY_END);
-  free_range((void *)(kernel_pa_end + KERNEL_VA), (void *)(KERNEL_PHY_END + KERNEL_VA));
-  LOGD("kmem_init: freelist=0x%x\n", kmem.freelist);
   slab_init();
 }
 
 void *kmalloc(size_t size) {
   LOGD("kmalloc: size = 0x%x\n", size);
-  if (size > PAGE_SIZE / 2) { return kmalloc_page(); }
+  if (size > (1 << (SLAB_MIN_SHIFT + KCONFIG_KMALLOC_NUM_BINS - 1))) {
+    void *pa = pmm_alloc_page();
+    assert(pa);
+    slab_hdr_t *hdr = (slab_hdr_t *)vmm_pa_to_va(pa);
+    hdr->bin_index = SLAB_BIN_LARGE;
+    hdr->magic = SLAB_MAGIC;
+    return (void *)(hdr + 1);
+  }
 
   int idx = size_to_bin(size);
   LOGT("kmalloc: bin = %d\n", idx);
@@ -93,8 +103,14 @@ void kfree(void *ptr) {
   assert(hdr->magic == SLAB_MAGIC);
   hdr->magic = 0;
 #endif
-  assert(hdr->bin_index < KCONFIG_KMALLOC_NUM_BINS);
 
+  if (hdr->bin_index == SLAB_BIN_LARGE) {
+    void *va = (void *)ALIGN_DOWN((uintptr_t)hdr, PAGE_SIZE);
+    pmm_free(vmm_va_to_pa(va));
+    return;
+  }
+
+  assert(hdr->bin_index < KCONFIG_KMALLOC_NUM_BINS);
   slab_bin_t *bin = &bins[hdr->bin_index];
   slab_run_t *run = (slab_run_t *)hdr;
 
@@ -117,8 +133,9 @@ static void slab_refill(slab_bin_t *bin) {
   size_t per_page = PAGE_SIZE / total;
   assert(per_page > 0);
 
-  uint8_t *page = (uint8_t *)kmalloc_page();
+  uint8_t *page = (uint8_t *)pmm_alloc_page();
   assert(page);
+  page = vmm_pa_to_va(page);
 
   for (size_t i = 0; i < per_page; i++) {
     slab_run_t *run = (slab_run_t *)(page + i * total);
@@ -134,42 +151,4 @@ static int size_to_bin(size_t size) {
   while (s >> (SLAB_MIN_SHIFT + bit)) bit++;
   if (bit >= KCONFIG_KMALLOC_NUM_BINS) return -1;
   return bit;
-}
-
-// PAGE LEVEL ALLOCATOR
-
-static void *kmalloc_page(void) {
-  struct run *r;
-
-  spinlock_lock(&kmem.lock);
-  r = kmem.freelist;
-  if (r) { kmem.freelist = r->next; }
-  spinlock_unlock(&kmem.lock);
-
-  if (r) { memset((uint8_t *)r, 0xDE, PAGE_SIZE); }
-  void *p = (void *)r;
-  LOGD("kmalloc_page: p = 0x%x\n", p);
-  return p;
-}
-
-static void kfree_page(void *va) {
-  LOGD("kfree_page: 0x%x\n", va);
-  uintptr_t pa = (uintptr_t)va - KERNEL_VA;
-  assert((uintptr_t)pa % PAGE_SIZE == 0);
-  assert((uintptr_t)pa >= kernel_pa_end);
-  assert((uintptr_t)pa < KERNEL_PHY_END);
-
-  memset(va, 0xBE, PAGE_SIZE);
-  run_t *r = (run_t *)va;
-
-  spinlock_lock(&kmem.lock);
-  r->next = kmem.freelist;
-  kmem.freelist = r;
-  spinlock_unlock(&kmem.lock);
-}
-
-static void free_range(void *va_start, void *va_end) {
-  LOGT("free_range: va_start = 0x%x, va_end = 0x%x\n", va_start, va_end);
-  uint8_t *p = (uint8_t *)PAGE_ROUNDUP((uintptr_t)va_start);
-  for (; (uintptr_t)(p + PAGE_SIZE) <= (uintptr_t)va_end; p += PAGE_SIZE) kfree_page((void *)p);
 }

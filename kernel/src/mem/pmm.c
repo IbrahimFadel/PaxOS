@@ -31,6 +31,7 @@ void pmm_init(const boot_info_t *boot_info) {
 
     uint32_t start = entry->base_addr;
     uint32_t end = start + entry->length;
+    LOGD("pmm_init: start = 0x%x, end = 0x%x\n", start, end);
     for (uint32_t addr = start; addr < end; addr += PAGE_SIZE) { page_set_free(addr / PAGE_SIZE); }
   }
 

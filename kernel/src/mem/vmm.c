@@ -2,7 +2,6 @@
 #include "i386/cpu.h"
 #include "i386/mmap.h"
 #include "logging/logging.h"
-#include "mem/bootstrap.h"
 #include "mem/page_table.h"
 #include "mem/pmm.h"
 #include <assert.h>
@@ -47,3 +46,5 @@ void vmm_unmap_page(page_table_t pt, void *va) {
 }
 
 void *vmm_pa_to_va(void *pa) { return (void *)((uintptr_t)pa + KERNEL_VA); }
+
+void *vmm_va_to_pa(void *va) { return (void *)((uintptr_t)va - KERNEL_VA); }
