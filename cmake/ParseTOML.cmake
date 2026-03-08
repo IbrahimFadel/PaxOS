@@ -50,7 +50,7 @@ function(toml_to_compile_definitions TOML_FILE OUT_VAR)
 
             # --- Integer → -DKEY=N ---
             elseif(VALUE MATCHES "^-?[0-9]+$")
-                list(APPEND DEFS ${KCONFIG_PREFIX}${KEY}=${KCONFIG_PREFIX}${VALUE})
+                list(APPEND DEFS ${KCONFIG_PREFIX}${KEY}=${VALUE})
 
             else()
                 message(WARNING "[ParseTOML]   Skipping unrecognised value for ${KEY}: ${VALUE}")

@@ -6,7 +6,6 @@ set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
 
 add_subdirectory(${ARCH_DIR})
-add_subdirectory(lib/logging)
 
 set(C_SRCS
 	src/interrupts/isr.c
@@ -33,10 +32,16 @@ set(C_SRCS
 add_executable(pax_kernel)
 target_sources(pax_kernel PRIVATE ${C_SRCS})
 target_include_directories(pax_kernel PRIVATE include arch lib)
-target_link_libraries(pax_kernel PRIVATE klibc logging)
+target_link_libraries(pax_kernel PRIVATE klibc)
 target_link_options(pax_kernel PRIVATE -T ${KERNEL_LINKER_FILE})
 add_dependencies(pax_kernel kernel_linker_script_preprocess sysroot_headers)
 target_compile_definitions(pax_kernel PRIVATE ${KCONFIG_COMPILE_DEFS})
+
+if("KCONFIG_ENABLE_LOGGING" IN_LIST KCONFIG_COMPILE_DEFS)
+	message(STATUS "adding `logging` library")
+	add_subdirectory(lib/logging)
+	target_link_libraries(pax_kernel PRIVATE logging)
+endif()
 
 add_custom_target(iso
 	COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/iso/boot/grub

@@ -2,6 +2,7 @@
 #include "i386/cpu.h"
 #include "i386/mmap.h"
 #include "interrupts/idt.h"
+#include "logging/logging.h"
 #include "mem/pmm.h"
 #include "mem/vmm.h"
 #include "multiboot2/multiboot2.h"
@@ -31,8 +32,6 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   idt_load();
   pic_remap(0x20, 0x28);
   sti();
-
-  assert(1 == 0);
 
   tty_writestring("PaxOS v0.0.1\n");
 
