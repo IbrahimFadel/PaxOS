@@ -10,6 +10,7 @@ ENABLE_LOGGING      = true
 ENABLE_ASSERTIONS   = true
 
 MAX_NUM_CPUS        = 8
+KMALLOC_NUM_BINS    = 7
 
 # from 0 to 4
 LOG_LEVEL           = 4

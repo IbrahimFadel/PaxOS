@@ -60,10 +60,21 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
 
   kmem_init();
 
-  uint32_t *p = (uint32_t *)kmalloc(PAGE_SIZE);
-  *p = 0xDEADBEEF;
+  void *p0 = kmalloc(PAGE_SIZE);
+  void *p1 = kmalloc(1);
+  void *p2 = kmalloc(50);
+  void *p3 = kmalloc(100);
+  void *p4 = kmalloc(500);
 
-  for (;;) {}
+  kfree(p1);
+  void *p5 = kmalloc(1);
+  assert(p1 == p5);
+
+  kfree(p2);
+  void *p6 = kmalloc(50);
+  assert(p2 == p6);
+
+  for (;;) { hlt(); }
 }
 
 __attribute__((noreturn)) void panic(const char *expr, const char *file, int line,

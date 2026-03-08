@@ -1,5 +1,5 @@
 #if defined(__is_libk)
-#include <pax/tty.h>
+  #include <pax/tty.h>
 #endif
 
 #include <stdio.h>
@@ -15,7 +15,6 @@ __attribute__((__noreturn__)) void abort(void) {
   // TODO: Abnormally terminate the process as if by SIGABRT.
   printf("abort()\n");
 #endif
-  for (;;) {
-  }
+  for (;;) {}
   __builtin_unreachable();
 }
