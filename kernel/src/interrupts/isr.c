@@ -15,31 +15,25 @@ void register_isr(interrupt_vector_t num, isr_t isr) {
   isrs[num] = isr;
 }
 
-void isr_handler(const registers_t *reg) {
+void isr_handler(const trap_frame_t *reg) {
   LOGT("isr_handler: int=%d, err=0x%x, eip=0x%x\n", reg->int_no, reg->err_code, reg->eip);
   assert(reg->int_no >= 0);
-  assert(reg->int_no <= IDT_NUM_GATES);
+  assert(reg->int_no < IDT_NUM_GATES);
 
   if (isrs[reg->int_no]) {
     isrs[reg->int_no](reg);
   } else {
     LOGE("isr_handler: no handler, halting...");
-    for (;;) {
-      hlt();
-    }
+    for (;;) { hlt(); }
   }
 }
 
-void div_err_isr(const registers_t *reg) {
+void div_err_isr(const trap_frame_t *reg) {
   LOGE("div_err_isr: eip = 0x%x\n", reg->eip);
-  for (;;) {
-    hlt();
-  }
+  for (;;) { hlt(); }
 }
 
-void page_fault_isr(const registers_t *reg) {
+void page_fault_isr(const trap_frame_t *reg) {
   LOGE("page_fault_isr: err_code = 0x%x, eip = 0x%x\n", reg->err_code, reg->eip);
-  for (;;) {
-    hlt();
-  }
+  for (;;) { hlt(); }
 }

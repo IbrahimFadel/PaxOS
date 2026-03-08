@@ -1,4 +1,5 @@
 #include "pic.h"
+#include "logging/logging.h"
 #include "sys/io.h"
 
 #define MASTER_PIC_CMD  0x20
@@ -24,6 +25,8 @@
 
 #define PIC_READ_IRR 0xA
 #define PIC_READ_ISR 0xB
+
+#define PIC_EOI 0x20
 
 static uint16_t pic_get_irq_reg(int ocw3);
 
@@ -93,4 +96,9 @@ static uint16_t pic_get_irq_reg(int ocw3) {
   outb(MASTER_PIC_CMD, ocw3);
   outb(SLAVE_PIC_CMD, ocw3);
   return (inb(SLAVE_PIC_CMD) << 8) | inb(MASTER_PIC_CMD);
+}
+
+void pic_send_eoi(uint8_t irq) {
+  if (irq >= 8) outb(SLAVE_PIC_CMD, PIC_EOI);
+  outb(MASTER_PIC_CMD, PIC_EOI);
 }

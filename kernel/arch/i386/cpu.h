@@ -140,13 +140,16 @@ static inline cpuid_reg_t cpuid(uint32_t eax) {
 
 local_apic_id cpu_get_local_apic_id(void);
 
+#define EFLAGS_RESERVED 0x2
+#define EFLAGS_IF       0x200
+
 static inline bool intr_enabled(void) {
   uint32_t eflags;
   __asm__ volatile(
     "pushfl\n"
     "pop %0\n"
     : "=r"(eflags));
-  return eflags & 0x0200;
+  return eflags & EFLAGS_IF;
 }
 
 #endif

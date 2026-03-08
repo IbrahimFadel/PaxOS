@@ -8,9 +8,10 @@ set(CMAKE_C_FLAGS_RELEASE "-O2")
 add_subdirectory(${ARCH_DIR})
 
 set(C_SRCS
-	src/interrupts/isr.c
 	src/interrupts/idt.c
 	src/interrupts/interrupts.s
+	src/interrupts/irq.c
+	src/interrupts/isr.c
 
 	src/ipc/spinlock.c
 
@@ -21,10 +22,15 @@ set(C_SRCS
 
 	src/multiboot2/multiboot2.c
 
+	src/tasks/task1.c
+	src/tasks/task2.c
+
 	src/gdt.c
 	src/kernel.c
 	src/pic.c
+	src/pit.c
 	src/proc.c
+	src/scheduler.c
 	src/tss.c
 
 	$<TARGET_OBJECTS:i386>

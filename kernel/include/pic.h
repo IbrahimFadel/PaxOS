@@ -10,5 +10,6 @@ void pic_unmask_all(void);
 void pic_mask_all(void);
 uint16_t pic_get_irr(void);
 uint16_t pic_get_isr(void);
+void pic_send_eoi(uint8_t irq);
 
 #endif

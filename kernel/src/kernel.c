@@ -8,7 +8,11 @@
 #include "mem/vmm.h"
 #include "multiboot2/multiboot2.h"
 #include "pic.h"
+#include "proc.h"
+#include "scheduler.h"
 #include "stdlib.h"
+#include "tasks/task1.h"
+#include "tasks/task2.h"
 #include "tss.h"
 #include <pax/tty.h>
 #include <stdint.h>
@@ -79,7 +83,14 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   void *p8 = kmalloc(PAGE_SIZE + 1);
   assert(p5 == p8);
 
-  for (;;) { hlt(); }
+  scheduler_init();
+  proc_t *proc1 = process_create(task1);
+  scheduler_add(proc1);
+
+  proc_t *proc2 = process_create(task2);
+  scheduler_add(proc2);
+
+  for (;;) {}
 }
 
 __attribute__((noreturn)) void panic(const char *expr, const char *file, int line,

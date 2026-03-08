@@ -1,7 +1,11 @@
 #include "interrupts/idt.h"
 #include "i386/cpu.h"
+#include "interrupts/irq.h"
 #include "interrupts/isr.h"
 #include "gdt.h"
+#include "pic.h"
+#include "pit.h"
+#include "scheduler.h"
 
 #define low_16(address)  (uint16_t)((address) & 0xFFFF)
 #define high_16(address) (uint16_t)(((address) >> 16) & 0xFFFF)
@@ -11,15 +15,6 @@ static __attribute__((aligned(IDT_ALIGNMENT))) gate_descriptor_t idt[IDT_NUM_GAT
 void set_idt_gate(int n, uint32_t handler) {
   idt[n]
     = GATE_DESCRIPTOR(handler, GDT_SELECTOR(GDT_KERNEL_CODE_IDX), GATE_TYPE_INT_32BIT, KERNEL_RING);
-}
-
-void irq_handler(const registers_t *r) {
-  LOGT("irq_handler: INT=%d ERR=%x EIP=%x\n", r->int_no, r->err_code, r->eip);
-
-  cli();
-  for (;;) {
-    hlt();
-  }
 }
 
 void idt_init(void) {
@@ -56,9 +51,29 @@ void idt_init(void) {
   set_idt_gate(30, (uint32_t)isr30);
   set_idt_gate(31, (uint32_t)isr31);
 
+  set_idt_gate(32 + IRQ0, (uint32_t)irq0);
+  set_idt_gate(32 + IRQ1, (uint32_t)irq1);
+  set_idt_gate(32 + IRQ2, (uint32_t)irq2);
+  set_idt_gate(32 + IRQ3, (uint32_t)irq3);
+  set_idt_gate(32 + IRQ4, (uint32_t)irq4);
+  set_idt_gate(32 + IRQ5, (uint32_t)irq5);
+  set_idt_gate(32 + IRQ6, (uint32_t)irq6);
+  set_idt_gate(32 + IRQ7, (uint32_t)irq7);
+  set_idt_gate(32 + IRQ8, (uint32_t)irq8);
+  set_idt_gate(32 + IRQ9, (uint32_t)irq9);
+  set_idt_gate(32 + IRQ10, (uint32_t)irq10);
+  set_idt_gate(32 + IRQ11, (uint32_t)irq11);
+  set_idt_gate(32 + IRQ12, (uint32_t)irq12);
+  set_idt_gate(32 + IRQ13, (uint32_t)irq13);
+  set_idt_gate(32 + IRQ14, (uint32_t)irq14);
+  set_idt_gate(32 + IRQ15, (uint32_t)irq15);
+
   isrs_zero();
   register_isr(IVEC_DIV_ERR, div_err_isr);
   register_isr(IVEC_PAGE_FAULT, page_fault_isr);
+
+  pit_init(KCONFIG_TICK_RATE_HZ);
+  register_irq(TIMER_IRQ, timer_isr);
 }
 
 void idt_load(void) {

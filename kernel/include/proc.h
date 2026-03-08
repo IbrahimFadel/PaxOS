@@ -1,8 +1,11 @@
 #ifndef KERNEL_PROC_H
 #define KERNEL_PROC_H
 
+#include "interrupts/idt.h"
+#include "mem/page_table.h"
 #include "stdbool.h"
 #include <stdint.h>
+#include <stddef.h>
 
 typedef uint32_t cpu_id_t;
 
@@ -15,5 +18,29 @@ typedef struct {
 } cpu_t;
 
 cpu_t *cpu_current(void);
+
+typedef uint32_t pid_t;
+
+typedef enum { PROC_RUNNING, PROC_READY, PROC_BLOCKED, PROC_ZOMBIE } proc_state_t;
+
+typedef struct proc {
+  uint32_t pid;
+  page_table_t page_dir;
+  trap_frame_t *tf;
+  void *kernel_stack;
+  proc_state_t state;
+  bool started;
+  struct proc *next;
+} proc_t;
+
+proc_t *process_create(void (*entry)(void));
+void process_destroy(proc_t *proc);
+
+#define PROCESS_PAGEDIR_OFFSET 4
+#define PROCESS_TF_OFFSET      8
+
+_Static_assert(offsetof(proc_t, page_dir) == PROCESS_PAGEDIR_OFFSET,
+               "PROCESS_PAGEDIR_OFFSET wrong");
+_Static_assert(offsetof(proc_t, tf) == PROCESS_TF_OFFSET, "PROCESS_TF_OFFSET wrong");
 
 #endif
