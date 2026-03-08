@@ -14,6 +14,7 @@ set_property(
     DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/kconfig.toml"
 )
+add_compile_definitions(${KCONFIG_COMPILE_DEFS})
 
 set(KERNEL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
 

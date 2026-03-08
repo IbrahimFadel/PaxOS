@@ -9,6 +9,8 @@
 ENABLE_LOGGING      = true
 ENABLE_ASSERTIONS   = true
 
+MAX_NUM_CPUS        = 8
+
 # from 0 to 4
 LOG_LEVEL           = 4
 VERSION_MAJOR       = 0

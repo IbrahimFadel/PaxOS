@@ -24,6 +24,7 @@ set(C_SRCS
 	src/gdt.c
 	src/kernel.c
 	src/pic.c
+	src/proc.c
 	src/tss.c
 
 	$<TARGET_OBJECTS:i386>
@@ -35,7 +36,6 @@ target_include_directories(pax_kernel PRIVATE include arch lib)
 target_link_libraries(pax_kernel PRIVATE klibc)
 target_link_options(pax_kernel PRIVATE -T ${KERNEL_LINKER_FILE})
 add_dependencies(pax_kernel kernel_linker_script_preprocess sysroot_headers)
-target_compile_definitions(pax_kernel PRIVATE ${KCONFIG_COMPILE_DEFS})
 
 if("KCONFIG_ENABLE_LOGGING" IN_LIST KCONFIG_COMPILE_DEFS)
 	message(STATUS "adding `logging` library")
