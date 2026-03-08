@@ -65,14 +65,19 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   void *p2 = kmalloc(50);
   void *p3 = kmalloc(100);
   void *p4 = kmalloc(500);
+  void *p5 = kmalloc(PAGE_SIZE * 3 + 30);
 
   kfree(p1);
-  void *p5 = kmalloc(1);
-  assert(p1 == p5);
+  void *p6 = kmalloc(1);
+  assert(p1 == p6);
 
   kfree(p2);
-  void *p6 = kmalloc(50);
-  assert(p2 == p6);
+  void *p7 = kmalloc(50);
+  assert(p2 == p7);
+
+  kfree(p5);
+  void *p8 = kmalloc(PAGE_SIZE + 1);
+  assert(p5 == p8);
 
   for (;;) { hlt(); }
 }

@@ -5,6 +5,7 @@
 #include "logging/logging.h"
 #include "mem/pmm.h"
 #include "mem/vmm.h"
+#include "utils.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -14,9 +15,6 @@
 #define SLAB_MAGIC     0xDEADC0DE
 #define SLAB_MIN_SHIFT 5
 #define SLAB_BIN_LARGE 0xFF
-
-#define ALIGN_UP(x, align)   (((x) + (align) - 1) & ~((align) - 1))
-#define ALIGN_DOWN(x, align) ((x) & ~((align) - 1))
 
 typedef struct run {
   struct run *next;
@@ -32,6 +30,7 @@ typedef struct slab_hdr {
 #ifdef KCONFIG_ENABLE_ASSERTIONS
   uint32_t magic;
 #endif
+  uint32_t num_pages;
 } slab_hdr_t;
 
 typedef struct slab_run {
@@ -66,11 +65,15 @@ void kmem_init(void) {
 void *kmalloc(size_t size) {
   LOGD("kmalloc: size = 0x%x\n", size);
   if (size > (1 << (SLAB_MIN_SHIFT + KCONFIG_KMALLOC_NUM_BINS - 1))) {
-    void *pa = pmm_alloc_page();
-    assert(pa);
-    slab_hdr_t *hdr = (slab_hdr_t *)vmm_pa_to_va(pa);
+    size_t num_pages = ALIGN_UP(sizeof(slab_hdr_t) + size, PAGE_SIZE) / PAGE_SIZE;
+
+    void *va_base = vmm_alloc_pages(num_pages);
+    assert(va_base);
+
+    slab_hdr_t *hdr = (slab_hdr_t *)va_base;
     hdr->bin_index = SLAB_BIN_LARGE;
     hdr->magic = SLAB_MAGIC;
+    hdr->num_pages = num_pages;
     return (void *)(hdr + 1);
   }
 
@@ -106,7 +109,7 @@ void kfree(void *ptr) {
 
   if (hdr->bin_index == SLAB_BIN_LARGE) {
     void *va = (void *)ALIGN_DOWN((uintptr_t)hdr, PAGE_SIZE);
-    pmm_free(vmm_va_to_pa(va));
+    vmm_free_pages(va, hdr->num_pages);
     return;
   }
 
