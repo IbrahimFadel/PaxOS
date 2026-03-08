@@ -1,5 +1,5 @@
 .vscode/
 build/
 iso/
-old/
 sysroot/
+kconfig.toml
