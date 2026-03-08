@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <sys/io.h>
 #include <assert.h>
+#include "kconfig.h" // IWYU pragma: export;
 
 void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   com1_init();

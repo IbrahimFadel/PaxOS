@@ -13,7 +13,10 @@ set(C_SRCS
 	src/interrupts/idt.c
 	src/interrupts/interrupts.s
 
+	src/ipc/spinlock.c
+
 	src/mem/bootstrap.c
+	src/mem/kmalloc.c
 	src/mem/pmm.c
 	src/mem/vmm.c
 
@@ -33,6 +36,7 @@ target_include_directories(pax_kernel PRIVATE include arch lib)
 target_link_libraries(pax_kernel PRIVATE klibc logging)
 target_link_options(pax_kernel PRIVATE -T ${KERNEL_LINKER_FILE})
 add_dependencies(pax_kernel kernel_linker_script_preprocess sysroot_headers)
+target_compile_definitions(pax_kernel PRIVATE ${KCONFIG_COMPILE_DEFS})
 
 add_custom_target(iso
 	COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/iso/boot/grub

@@ -7,6 +7,14 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+# parse kconfig
+include(cmake/ParseTOML.cmake)
+toml_to_compile_definitions("kconfig.toml" KCONFIG_COMPILE_DEFS)
+set_property(
+    DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/kconfig.toml"
+)
+
 set(KERNEL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
 
 add_custom_command(

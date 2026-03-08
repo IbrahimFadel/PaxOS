@@ -1,0 +1,15 @@
+# ============================================================
+# build_config.toml — Feature flags for compilation
+# ============================================================
+# bool  true  → adds  -DKEY          (enables #ifdef KEY)
+# bool  false → omitted              (disables #ifdef KEY)
+# string/int  → adds  -DKEY="value"  (accessible as a macro)
+# ============================================================
+
+ENABLE_LOGGING      = true
+ENABLE_ASSERTIONS   = true
+
+LOG_LEVEL           = 0
+VERSION_MAJOR       = 0
+VERSION_MINOR       = 0
+VERSION_PATCH       = 1
