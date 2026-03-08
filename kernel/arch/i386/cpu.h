@@ -6,17 +6,17 @@
 #include <stdint.h>
 
 static inline void cli(void) {
-  LOGT("cli");
+  LOGT("cli\n");
   __asm__ volatile("cli" :::);
 }
 
 static inline void sti(void) {
-  LOGT("sti");
+  LOGT("sti\n");
   __asm__ volatile("sti" :::);
 }
 
 static inline void hlt(void) {
-  LOGT("hlt");
+  LOGT("hlt\n");
   __asm__ volatile("hlt" :::);
 }
 

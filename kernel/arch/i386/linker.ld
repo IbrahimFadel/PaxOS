@@ -1,4 +1,4 @@
-#include "mmap.h"
+#include "mmap_config.h"
 
 ENTRY(_start)
 

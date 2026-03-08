@@ -1,7 +1,9 @@
 #include "gdt.h"
 #include "i386/cpu.h"
 #include "i386/mmap.h"
+#include "i386/mmap_config.h"
 #include "interrupts/idt.h"
+#include "mem/kmalloc.h"
 #include "mem/pmm.h"
 #include "mem/vmm.h"
 #include "multiboot2/multiboot2.h"
@@ -53,8 +55,13 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   *ptr = 0xDEADBEEF;
   assert(*ptr == 0xDEADBEEF);
 
-  vmm_unmap_page(kernel_page_dir, ptr);
-  *ptr = 0xFF00FF00;
+  // vmm_unmap_page(kernel_page_dir, ptr);
+  // *ptr = 0xFF00FF00;
+
+  kmem_init();
+
+  uint32_t *p = (uint32_t *)kmalloc(PAGE_SIZE);
+  *p = 0xDEADBEEF;
 
   for (;;) {}
 }
@@ -66,7 +73,5 @@ __attribute__((noreturn)) void panic(const char *expr, const char *file, int lin
   printf("\n=== KERNEL PANIC ===\n");
   printf("assertion failed: %s\n", expr);
   printf("location: %s:%d (%s)\n", file, line, func);
-  for (;;) {
-    hlt();
-  }
+  for (;;) { hlt(); }
 }

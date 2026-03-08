@@ -12,7 +12,7 @@ static void spinlock_pop_off(void);
 static bool spinlock_locked(const spinlock_t *lock);
 
 spinlock_t spinlock_init(void) {
-  spinlock_t lock = {.locked = 0, .cpu_id = -1};
+  spinlock_t lock = {.locked = 0, .cpu_id = CPU_ID_SENTINEL};
   return lock;
 }
 
@@ -25,7 +25,7 @@ void spinlock_lock(spinlock_t *lock) {
 
 void spinlock_unlock(spinlock_t *lock) {
   assert(spinlock_holding(lock));
-  lock->cpu_id = 0;
+  lock->cpu_id = CPU_ID_SENTINEL;
   atomic_store_explicit(&lock->locked, 0, memory_order_release);
   spinlock_pop_off();
 }

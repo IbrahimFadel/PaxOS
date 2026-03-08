@@ -1,4 +1,4 @@
-#include "mmap.h"
+#include "mmap_config.h"
 
 .intel_syntax noprefix
 
@@ -29,7 +29,7 @@ _start:
 	# put all kernel code into `kernel_page_table`
 	cmp esi, offset KERNEL_START
 	jl .map_inc
-	cmp esi, offset ld_kernel_end - KERNEL_VA
+	cmp esi, offset KERNEL_PHY_END
 	jge .map_finish
 
 	# mark address as present and store in page table

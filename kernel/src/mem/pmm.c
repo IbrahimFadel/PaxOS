@@ -6,7 +6,6 @@
 #include "i386/mmap.h"
 #include "intrinsics.h"
 #include "logging/logging.h"
-#include "mem/bootstrap.h"
 #include "multiboot2/multiboot2.h"
 
 #define BITS_PER_WORD    32
@@ -22,8 +21,6 @@ static int page_free(uint32_t page);
 static uint32_t page_bitmap[NUM_BITMAP_WORDS];
 static uint32_t last_word = 0;
 
-extern char ld_kernel_end;
-
 void pmm_init(const boot_info_t *boot_info) {
   memset(page_bitmap, 0xFFFFFFFF, sizeof(page_bitmap));
 
@@ -34,13 +31,11 @@ void pmm_init(const boot_info_t *boot_info) {
 
     uint32_t start = entry->base_addr;
     uint32_t end = start + entry->length;
-    for (uint32_t addr = start; addr < end; addr += PAGE_SIZE) {
-      page_set_free(addr / PAGE_SIZE);
-    }
+    for (uint32_t addr = start; addr < end; addr += PAGE_SIZE) { page_set_free(addr / PAGE_SIZE); }
   }
 
   uint32_t kernel_start = (uint32_t)KERNEL_START;
-  uint32_t kernel_end = (uint32_t)&ld_kernel_end;
+  uint32_t kernel_end = (uint32_t)ld_kernel_end;
   for (uint64_t addr = kernel_start; addr < kernel_end; addr += PAGE_SIZE) {
     page_set_used(addr / PAGE_SIZE);
   }
