@@ -3,6 +3,8 @@
 
 #include "proc.h"
 
+extern proc_t *current_proc;
+
 void scheduler_init(void);
 void schedule(void);
 void scheduler_add(proc_t *proc);

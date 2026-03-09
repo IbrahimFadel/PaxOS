@@ -45,6 +45,7 @@ typedef enum {
   IVEC_SIMD_FLOATING_POINT_EXCEPTION = 19,
   IVEC_VIRTUALIZATION_EXCEPTION = 20,
   IVEC_CONTROL_PROTECTION_EXCEPTION = 21,
+  IVEC_SYSCALL = 128,
 } interrupt_vector_t;
 
 typedef struct __attribute__((packed)) {

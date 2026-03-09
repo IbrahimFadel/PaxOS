@@ -15,7 +15,7 @@ void register_isr(interrupt_vector_t num, isr_t isr) {
   isrs[num] = isr;
 }
 
-void isr_handler(const trap_frame_t *reg) {
+void isr_handler(trap_frame_t *reg) {
   LOGT("isr_handler: int=%d, err=0x%x, eip=0x%x\n", reg->int_no, reg->err_code, reg->eip);
   assert(reg->int_no >= 0);
   assert(reg->int_no < IDT_NUM_GATES);
@@ -28,13 +28,15 @@ void isr_handler(const trap_frame_t *reg) {
   }
 }
 
-void div_err_isr(const trap_frame_t *reg) {
+void div_err_isr(trap_frame_t *reg) {
   LOGE("div_err_isr: eip = 0x%x\n", reg->eip);
   for (;;) { hlt(); }
 }
 
-void page_fault_isr(const trap_frame_t *reg) {
-  LOGE("page_fault_isr: err_code = 0x%x, eip = 0x%x\n", reg->err_code, reg->eip);
+void page_fault_isr(trap_frame_t *reg) {
+  uint32_t cr2;
+  __asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
+  LOGE("page_fault_isr: err_code = 0x%x, cr2 = 0x%x, eip = 0x%x\n", reg->err_code, cr2, reg->eip);
 
   if (reg->err_code & 1) { LOGE("error: present\n"); }
   if (reg->err_code & (1 << 1)) { LOGE("error: write\n"); }
@@ -48,7 +50,7 @@ void page_fault_isr(const trap_frame_t *reg) {
   for (;;) { hlt(); }
 }
 
-void general_prot_isr(const trap_frame_t *reg) {
+void general_prot_isr(trap_frame_t *reg) {
   LOGE("general_prot_isr: err_code = 0x%x, eip = 0x%x\n", reg->err_code, reg->eip);
   for (;;) { hlt(); }
 }

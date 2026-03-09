@@ -16,7 +16,7 @@
 __attribute__((naked)) static void switch_context(proc_t *old, proc_t *new);
 static proc_t *scheduler_next(void);
 
-static proc_t *current_proc = NULL;
+proc_t *current_proc = NULL;
 static proc_t *run_queue = NULL;
 static proc_t *idle_proc = NULL;
 
@@ -52,7 +52,9 @@ void schedule(void) {
   LOGD("switch_context: prev = 0x%x (pid=%d), next = 0x%x (pid=%d)\n", prev, prev->pid, next,
        next->pid);
 
-  __asm__ volatile("mov %0, %%cr3" ::"r"(next->page_dir) : "memory");
+  if (next->page_dir != prev->page_dir) {
+    __asm__ volatile("mov %0, %%cr3" ::"r"(next->page_dir) : "memory");
+  }
   tss_set_kernel_stack((uint32_t)(next->kernel_stack) + KERNEL_STACK_SIZE);
   switch_context(prev, next);
 }
@@ -99,9 +101,6 @@ static proc_t *scheduler_next(void) {
   return idle_proc;
 }
 
-// "mov %c1(%%edx), %%ebx\n"        // ebx = new->page_dir
-// "mov %%ebx, %%cr3\n" // change address space (TODO: check if it actually needs to be updated?)
-
 __attribute__((naked)) static void switch_context(proc_t *old, proc_t *new) {
   // eax ecx and edx already saved by caller
   __asm__ volatile(
@@ -123,7 +122,5 @@ __attribute__((naked)) static void switch_context(proc_t *old, proc_t *new) {
 
     "ret\n"
     :
-    : "i"(offsetof(proc_t, ctx))
-    // , "i"(offsetof(proc_t, page_dir))
-  );
+    : "i"(offsetof(proc_t, ctx)));
 }

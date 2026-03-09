@@ -18,6 +18,7 @@ static void process_map_user_text(proc_t *proc);
 static page_table_t process_create_page_dir(void);
 __attribute__((naked)) static void proc_sti_on_entry(void);
 __attribute__((naked)) static void proc_enter_userspace(void);
+static void log_iret_frame(uint32_t *frame);
 
 static cpu_t cpus[KCONFIG_MAX_NUM_CPUS];
 static pid_t next_pid = 0;
@@ -158,10 +159,22 @@ __attribute__((naked)) static void proc_sti_on_entry(void) {
 
 __attribute__((naked)) static void proc_enter_userspace(void) {
   __asm__ volatile(
-    "mov %0, %%ax   \n"
-    "mov %%ax, %%ds \n"
-    "mov %%ax, %%es \n"
-    "mov %%ax, %%fs \n"
-    "mov %%ax, %%gs \n"
-    "iret           \n" ::"i"(GDT_SELECTOR(GDT_USER_DATA_IDX) | PRIV_USER));
+    "mov %0, %%ax\n"
+    "mov %%ax, %%ds\n"
+    "mov %%ax, %%es\n"
+    "mov %%ax, %%fs\n"
+    "mov %%ax, %%gs\n"
+
+#ifdef KCONFIG_ENABLE_LOGGING
+    "push %%esp\n"
+    "call log_iret_frame\n"
+    "add $4, %%esp\n"
+#endif
+
+    "iret\n" ::"i"(GDT_SELECTOR(GDT_USER_DATA_IDX) | PRIV_USER));
+}
+
+static void log_iret_frame(uint32_t *frame) {
+  LOGT("iret frame: eip=0x%x cs=0x%x eflags=0x%x esp=0x%x ss=0x%x\n", frame[0], frame[1], frame[2],
+       frame[3], frame[4]);
 }

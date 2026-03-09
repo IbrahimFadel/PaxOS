@@ -1,6 +1,8 @@
 #ifndef KERNEL_TSS_H
 #define KERNEL_TSS_H
 
+#include "gdt.h"
+#include "logging/logging.h"
 #include <stdint.h>
 
 #define TSS_SECTION __attribute__((section(".tss")))
@@ -70,8 +72,12 @@ extern tss_t tss;
 
 void tss_init(void);
 __attribute__((naked)) void tss_load_segment_registers(void);
-void tss_load(void);
 
-void tss_set_kernel_stack(uint32_t esp0);
+static inline void tss_set_kernel_stack(uint32_t esp0) {
+  tss.esp0 = esp0;
+  LOGT("tss.esp0 = 0x%x tss.ss0 = 0x%x\n", tss.esp0, tss.ss0);
+}
+
+static inline void tss_load(void) { __asm__ volatile("ltr %0" ::"r"(GDT_SELECTOR(GDT_TSS_IDX))); }
 
 #endif

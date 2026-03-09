@@ -22,6 +22,11 @@ set(C_SRCS
 
 	src/multiboot2/multiboot2.c
 
+	src/syscall/brk.c
+	src/syscall/exit.c
+	src/syscall/syscall.c
+	src/syscall/write.c
+
 	src/tasks/idle.c
 	src/tasks/task1.c
 	src/tasks/task2.c

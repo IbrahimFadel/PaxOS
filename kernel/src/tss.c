@@ -1,13 +1,10 @@
 #include "tss.h"
 #include "gdt.h"
 #include "i386/mmap.h"
+#include <stdint.h>
 #include <string.h>
 
 TSS_SECTION __attribute__((aligned(TSS_ALIGNMENT))) tss_t tss;
-
-extern uint8_t kernel_stack_top[KERNEL_STACK_SIZE];
-
-void tss_set_kernel_stack(uint32_t esp0) { tss.esp0 = esp0; }
 
 void tss_init(void) {
   memset(&tss, 0, sizeof(tss));
@@ -31,5 +28,3 @@ __attribute__((naked)) void tss_load_segment_registers(void) {
     :
     : "ax");
 }
-
-void tss_load(void) { __asm__ volatile("ltr %0" ::"r"(GDT_SELECTOR(GDT_TSS_IDX))); }
