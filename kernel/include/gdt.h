@@ -71,8 +71,12 @@ typedef segment_descriptor_t descriptor_table_t[];
 #define GDT_USER_DATA_IDX   4
 #define GDT_TSS_IDX         5
 
-#define KERNEL_RING 0
-#define USER_RING   3
+typedef enum {
+  PRIV_RING0 = 0,
+  PRIV_RING3 = 3,
+  PRIV_KERNEL = PRIV_RING0,
+  PRIV_USER = PRIV_RING3
+} priv_t;
 
 extern __attribute__((aligned(GDT_ALIGNMENT))) segment_descriptor_t gdt[6];
 

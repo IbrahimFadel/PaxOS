@@ -1,5 +1,6 @@
 #include "scheduler.h"
 #include "i386/cpu.h"
+#include "i386/mmap_config.h"
 #include "interrupts/irq.h"
 #include "logging/logging.h"
 #include "pic.h"
@@ -7,8 +8,10 @@
 #include "tasks/idle.h"
 #include "tasks/task1.h"
 #include "tasks/task2.h"
+#include "tss.h"
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 
 __attribute__((naked)) static void switch_context(proc_t *old, proc_t *new);
 static proc_t *scheduler_next(void);
@@ -26,7 +29,7 @@ void timer_irq(trap_frame_t *tf) {
 }
 
 void scheduler_init(void) {
-  idle_proc = process_create(idle_task);
+  idle_proc = process_create_kernel(idle_task);
   idle_proc->state = PROC_RUNNING;
   current_proc = idle_proc;
   run_queue = idle_proc;
@@ -48,6 +51,9 @@ void schedule(void) {
 
   LOGD("switch_context: prev = 0x%x (pid=%d), next = 0x%x (pid=%d)\n", prev, prev->pid, next,
        next->pid);
+
+  __asm__ volatile("mov %0, %%cr3" ::"r"(next->page_dir) : "memory");
+  tss_set_kernel_stack((uint32_t)(next->kernel_stack) + KERNEL_STACK_SIZE);
   switch_context(prev, next);
 }
 
@@ -93,6 +99,9 @@ static proc_t *scheduler_next(void) {
   return idle_proc;
 }
 
+// "mov %c1(%%edx), %%ebx\n"        // ebx = new->page_dir
+// "mov %%ebx, %%cr3\n" // change address space (TODO: check if it actually needs to be updated?)
+
 __attribute__((naked)) static void switch_context(proc_t *old, proc_t *new) {
   // eax ecx and edx already saved by caller
   __asm__ volatile(
@@ -114,5 +123,7 @@ __attribute__((naked)) static void switch_context(proc_t *old, proc_t *new) {
 
     "ret\n"
     :
-    : "i"(offsetof(proc_t, ctx)));
+    : "i"(offsetof(proc_t, ctx))
+    // , "i"(offsetof(proc_t, page_dir))
+  );
 }

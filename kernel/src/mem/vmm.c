@@ -1,6 +1,7 @@
 #include "mem/vmm.h"
 #include "i386/cpu.h"
 #include "i386/mmap.h"
+#include "i386/mmap_config.h"
 #include "logging/logging.h"
 #include "mem/page_table.h"
 #include "mem/pmm.h"
@@ -42,7 +43,9 @@ void vmm_map_page(page_table_t pt, void *va, void *pa, uint32_t flags) {
     void *page_pa = pmm_alloc_page();
     void *page_va = vmm_pa_to_va(page_pa);
     memset(page_va, 0x0, PAGE_SIZE);
-    pt[l1_idx] = (uint32_t)page_pa | PAGE_PRESENT | PAGE_RW;
+    uint32_t pde_flags = PAGE_PRESENT | PAGE_RW;
+    if (flags & PTE_USER) { pde_flags |= PTE_USER; }
+    pt[l1_idx] = (uint32_t)page_pa | pde_flags;
   }
 
   void *l0_pa = (void *)(pt[l1_idx] & ~0xFFF);

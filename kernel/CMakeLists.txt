@@ -33,6 +33,7 @@ set(C_SRCS
 	src/proc.c
 	src/scheduler.c
 	src/tss.c
+	src/user.c
 
 	$<TARGET_OBJECTS:i386>
 )

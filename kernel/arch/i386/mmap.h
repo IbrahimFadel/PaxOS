@@ -6,4 +6,8 @@
 
 extern uint8_t ld_kernel_end[];
 
+extern uint32_t _user_text_start; // VMA = 0x00400000 (user virtual address)
+extern uint32_t _user_text_end;   // VMA = 0x00400000 + size
+extern uint32_t _user_text_phys;  // LMA = physical address to map from
+
 #endif

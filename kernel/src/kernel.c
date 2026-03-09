@@ -21,6 +21,8 @@
 #include <assert.h>
 #include "kconfig.h" // IWYU pragma: export;
 
+extern void user_function(void);
+
 void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   com1_init();
   tty_init();
@@ -84,11 +86,23 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   assert(p5 == p8);
 
   scheduler_init();
-  proc_t *proc1 = process_create(task1);
-  scheduler_add(proc1);
 
-  proc_t *proc2 = process_create(task2);
-  scheduler_add(proc2);
+  proc_t *kproc1 = process_create(task1, PRIV_KERNEL);
+  assert(kproc1);
+
+  proc_t *kproc2 = process_create(task2, PRIV_KERNEL);
+  assert(kproc2);
+
+  proc_t *uproc1 = process_create(user_function, PRIV_USER);
+  assert(uproc1);
+
+  proc_t *uproc2 = process_create(user_function, PRIV_USER);
+  assert(uproc2);
+
+  scheduler_add(kproc1);
+  scheduler_add(kproc2);
+  scheduler_add(uproc1);
+  scheduler_add(uproc2);
 
   for (;;) {}
 }
