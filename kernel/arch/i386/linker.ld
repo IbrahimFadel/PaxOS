@@ -3,8 +3,6 @@
 ENTRY(_start)
 
 SECTIONS {
-    /* kernel loaded into KERNEL_VA + 1MB VA */
-	/* this gets mapped to 1MB PA */
     . = KERNEL_OFFSET_START;
 	PROVIDE(_kernel_start = .);
 
@@ -16,7 +14,23 @@ SECTIONS {
         *(.multiboot2.text)
 	}
 
-	. += KERNEL_VA;
+	 /* User code lives at a well-known user VA,
+       but physically sits right after the multiboot sections.
+       AT() sets the LMA (load/physical address) independently of the VMA. */
+    _user_text_phys = ALIGN(LOADADDR(.multiboot2.text) 
+                            + SIZEOF(.multiboot2.text), 4K);
+
+    .user_text 0x00400000 : AT(_user_text_phys) {
+        _user_text_start = .;         /* VMA = 0x00400000 */
+        *(.user_text)
+        . = ALIGN(4K);
+        _user_text_end = .;
+    }
+
+	. = KERNEL_OFFSET_START + SIZEOF(.multiboot2.data) 
+                             + SIZEOF(.multiboot2.text)
+                             + SIZEOF(.user_text);
+    . += KERNEL_VA;
 
 	.text ALIGN (4K) : AT (ADDR (.text) - KERNEL_VA) {
 		*(.text)

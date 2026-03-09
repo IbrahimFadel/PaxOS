@@ -35,5 +35,20 @@ void div_err_isr(const trap_frame_t *reg) {
 
 void page_fault_isr(const trap_frame_t *reg) {
   LOGE("page_fault_isr: err_code = 0x%x, eip = 0x%x\n", reg->err_code, reg->eip);
+
+  if (reg->err_code & 1) { LOGE("error: present\n"); }
+  if (reg->err_code & (1 << 1)) { LOGE("error: write\n"); }
+  if (reg->err_code & (1 << 2)) { LOGE("error: user\n"); }
+  if (reg->err_code & (1 << 3)) { LOGE("error: reserved write\n"); }
+  if (reg->err_code & (1 << 4)) { LOGE("error: instr fetch\n"); }
+  if (reg->err_code & (1 << 5)) { LOGE("error: prot key\n"); }
+  if (reg->err_code & (1 << 6)) { LOGE("error: shadow stack\n"); }
+  if (reg->err_code & (1 << 7)) { LOGE("error: sgx\n"); }
+
+  for (;;) { hlt(); }
+}
+
+void general_prot_isr(const trap_frame_t *reg) {
+  LOGE("general_prot_isr: err_code = 0x%x, eip = 0x%x\n", reg->err_code, reg->eip);
   for (;;) { hlt(); }
 }

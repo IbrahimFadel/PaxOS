@@ -72,4 +72,6 @@ void tss_init(void);
 __attribute__((naked)) void tss_load_segment_registers(void);
 void tss_load(void);
 
+void tss_set_kernel_stack(uint32_t esp0);
+
 #endif

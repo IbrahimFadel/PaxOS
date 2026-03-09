@@ -12,7 +12,7 @@ static __attribute__((aligned(IDT_ALIGNMENT))) gate_descriptor_t idt[IDT_NUM_GAT
 
 void set_idt_gate(int n, uint32_t handler) {
   idt[n]
-    = GATE_DESCRIPTOR(handler, GDT_SELECTOR(GDT_KERNEL_CODE_IDX), GATE_TYPE_INT_32BIT, KERNEL_RING);
+    = GATE_DESCRIPTOR(handler, GDT_SELECTOR(GDT_KERNEL_CODE_IDX), GATE_TYPE_INT_32BIT, PRIV_KERNEL);
 }
 
 void idt_init(void) {
@@ -69,6 +69,7 @@ void idt_init(void) {
   isrs_zero();
   register_isr(IVEC_DIV_ERR, div_err_isr);
   register_isr(IVEC_PAGE_FAULT, page_fault_isr);
+  register_isr(IVEC_GENERAL_PROT, general_prot_isr);
 
   pit_init(KCONFIG_TICK_RATE_HZ);
   register_irq(TIMER_IRQ, timer_irq);
