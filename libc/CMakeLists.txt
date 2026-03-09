@@ -9,8 +9,10 @@ add_library(klibc STATIC
     stdio/snprintf.c
     stdio/sprintf.c
     stdio/vsnprintf.c
+    stdio/write.c
 
     stdlib/abort.c
+    stdlib/exit.c
     stdlib/itoa.c
     stdlib/panic.c
     stdlib/utoa.c
@@ -27,3 +29,4 @@ add_library(klibc STATIC
 )
 target_include_directories(klibc PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 add_dependencies(klibc sysroot_headers)
+target_compile_definitions(klibc PRIVATE __is_libk)

@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "utils.h"
 
-void *sbrk(int increment) {
+void *sys_sbrk(int increment) {
   //   uint32_t old_brk = current_proc->brk;
   //   uint32_t new_brk = old_brk + increment;
 

@@ -3,6 +3,6 @@
 
 #include <stddef.h>
 
-void exit(int code);
+void sys_exit(int code);
 
 #endif

@@ -5,8 +5,6 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
 
-add_subdirectory(${ARCH_DIR})
-
 set(C_SRCS
 	src/interrupts/idt.c
 	src/interrupts/interrupts.s
@@ -38,10 +36,11 @@ set(C_SRCS
 	src/proc.c
 	src/scheduler.c
 	src/tss.c
-	src/user.c
 
 	$<TARGET_OBJECTS:i386>
 )
+
+add_subdirectory(${ARCH_DIR})
 
 add_executable(pax_kernel)
 target_sources(pax_kernel PRIVATE ${C_SRCS})

@@ -2,7 +2,7 @@
 #include "proc.h"
 #include "scheduler.h"
 
-void exit(int code) {
+void sys_exit(int code) {
   current_proc->state = PROC_ZOMBIE;
   scheduler_remove(current_proc);
   schedule();

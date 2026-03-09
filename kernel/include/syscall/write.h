@@ -3,6 +3,6 @@
 
 #include <stddef.h>
 
-int write(int fd, const void *buf, size_t count);
+int sys_write(int fd, const void *buf, size_t count);
 
 #endif

@@ -24,7 +24,6 @@ add_custom_command(
     COMMAND
         ${CMAKE_C_COMPILER}
             -E -P -x c
-            # -I${COMMON_DIR}
             ${KERNEL_LINKER_FILE_UNPROCESSED}
             -o ${KERNEL_LINKER_FILE}
     DEPENDS ${KERNEL_LINKER_FILE_UNPROCESSED}
@@ -53,6 +52,6 @@ add_custom_command(
 )
 add_custom_target(sysroot_headers DEPENDS ${CMAKE_BINARY_DIR}/headers.stamp)
 
-add_compile_definitions(__is_libk)
 add_subdirectory(libc)
 add_subdirectory(kernel)
+add_subdirectory(user)

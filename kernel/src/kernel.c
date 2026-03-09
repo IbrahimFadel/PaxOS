@@ -93,16 +93,8 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   proc_t *kproc2 = process_create(task2, PRIV_KERNEL);
   assert(kproc2);
 
-  proc_t *uproc1 = process_create(user_function, PRIV_USER);
-  assert(uproc1);
-
-  proc_t *uproc2 = process_create(user_function, PRIV_USER);
-  assert(uproc2);
-
   scheduler_add(kproc1);
   scheduler_add(kproc2);
-  scheduler_add(uproc1);
-  scheduler_add(uproc2);
 
   for (;;) {}
 }

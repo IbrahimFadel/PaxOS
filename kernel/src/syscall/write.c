@@ -10,7 +10,7 @@
 
 static bool uptr_valid(const void *ptr, size_t len);
 
-int write(int fd, const void *buf, size_t count) {
+int sys_write(int fd, const void *buf, size_t count) {
   LOGI("syscall: write: fd = %d, buf = 0x%x, count = %d\n", fd, buf, count);
   if (!uptr_valid(buf, count)) {
     LOGE("buf invalid\n");
