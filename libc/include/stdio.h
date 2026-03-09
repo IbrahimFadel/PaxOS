@@ -6,6 +6,10 @@
 
 #define EOF (-1)
 
+extern int stdin;
+extern int stdout;
+extern int stderr;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

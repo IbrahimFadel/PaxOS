@@ -9,6 +9,7 @@ set(USER_LINKER_FILE_UNPROCESSED ${CMAKE_CURRENT_SOURCE_DIR}/linker.ld)
 set(USER_LINKER_FILE ${CMAKE_BINARY_DIR}/user/linker.ld)
 
 set(C_SRCS
+	src/crt0.s
 	src/main.c
 )
 
