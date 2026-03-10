@@ -12,7 +12,7 @@ extern "C" {
   char *itoa(int value, char *str, int base);
   char *utoa(unsigned int value, char *str, int base);
 
-#ifndef __is_libk
+#ifndef __is_klibc
   void exit(int code);
 #endif
 

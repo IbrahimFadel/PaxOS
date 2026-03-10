@@ -1,11 +1,11 @@
 #include <sys/io.h>
 
-#if defined(__is_libk)
+#if defined(__is_klibc)
   #include <pax/tty.h>
 #endif
 
 int putchar(int c) {
-#if defined(__is_libk)
+#if defined(__is_klibc)
   // wait for transmit buffer to be empty
   while (!(inb(COM1 + 5) & 0x20)) {}
   outb(COM1, c);

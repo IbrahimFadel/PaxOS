@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.22.4)
 
+message(STATUS "building ${LIBC_NAME} with definitions: ${LIBC_COMPILE_DEFINITIONS}")
 add_library(${LIBC_NAME} STATIC
     arch/i386/io.c
 

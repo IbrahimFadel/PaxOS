@@ -1,4 +1,4 @@
-#if defined(__is_libk)
+#if defined(__is_klibc)
   #include <pax/tty.h>
 #endif
 
@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 __attribute__((__noreturn__)) void abort(void) {
-#if defined(__is_libk)
+#if defined(__is_klibc)
   // TODO: Add proper kernel panic.
   tty_set_colour(vga_char_colour(VGA_COLOR_RED, VGA_COLOR_BLACK));
   printf("kernel panic: abort()\n");

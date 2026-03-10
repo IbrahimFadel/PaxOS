@@ -1,4 +1,4 @@
-#ifndef __is_libk
+#ifndef __is_klibc
   #include "stdlib.h"
 
 void exit(int code) {
