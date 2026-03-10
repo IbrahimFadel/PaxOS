@@ -6,6 +6,9 @@ set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
 
 set(C_SRCS
+	src/fs/ramfs/initrd.c
+	src/fs/ramfs/ramfs.c
+
 	src/interrupts/idt.c
 	src/interrupts/interrupts.s
 	src/interrupts/irq.c
@@ -20,8 +23,14 @@ set(C_SRCS
 
 	src/multiboot2/multiboot2.c
 
+	src/proc/elf.c
+	src/proc/proc.c
+
 	src/syscall/brk.c
+	src/syscall/close.c
 	src/syscall/exit.c
+	src/syscall/open.c
+	src/syscall/read.c
 	src/syscall/syscall.c
 	src/syscall/write.c
 
@@ -33,7 +42,6 @@ set(C_SRCS
 	src/kernel.c
 	src/pic.c
 	src/pit.c
-	src/proc.c
 	src/scheduler.c
 	src/tss.c
 
@@ -48,6 +56,10 @@ target_include_directories(pax_kernel PRIVATE include arch lib)
 target_link_libraries(pax_kernel PRIVATE klibc)
 target_link_options(pax_kernel PRIVATE -T ${KERNEL_LINKER_FILE})
 add_dependencies(pax_kernel kernel_linker_script_preprocess sysroot_headers)
+
+set(LIBC_NAME klibc)
+set(LIBC_COMPILE_DEFINITIONS __is_klibc)
+add_subdirectory(../libc klibc)
 
 if("KCONFIG_ENABLE_LOGGING" IN_LIST KCONFIG_COMPILE_DEFS)
 	message(STATUS "adding `logging` library")

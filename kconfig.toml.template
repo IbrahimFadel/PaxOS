@@ -11,6 +11,11 @@ ENABLE_ASSERTIONS   = true
 
 MAX_NUM_CPUS        = 8
 KMALLOC_NUM_BINS    = 7
+TICK_RATE_HZ        = 25
+
+MAX_FDS             = 16
+RAMFS_MAX_NUM_FILES = 64
+RAMFS_MAX_NAME_LEN  = 64
 
 # from 0 to 4
 LOG_LEVEL           = 4

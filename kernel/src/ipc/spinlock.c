@@ -1,7 +1,6 @@
 #include "ipc/spinlock.h"
 #include "i386/cpu.h"
 #include "logging/logging.h"
-#include "proc.h"
 #include "stdbool.h"
 #include <assert.h>
 #include <stdatomic.h>

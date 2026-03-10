@@ -1,4 +1,4 @@
-#include "proc.h"
+#include "proc/proc.h"
 #include "gdt.h"
 #include "i386/cpu.h"
 #include "i386/mmap.h"

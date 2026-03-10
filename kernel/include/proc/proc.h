@@ -1,6 +1,7 @@
-#ifndef KERNEL_PROC_H
-#define KERNEL_PROC_H
+#ifndef KERNEL_PROC_PROC_H
+#define KERNEL_PROC_PROC_H
 
+#include "fs/fs.h"
 #include "gdt.h"
 #include "interrupts/idt.h"
 #include "mem/page_table.h"
@@ -49,6 +50,7 @@ typedef struct proc {
   void *kernel_stack;
   proc_state_t state;
   struct proc *next;
+  fd_entry_t fds[KCONFIG_MAX_FDS];
 } proc_t;
 
 proc_t *process_create(void (*entry)(void), priv_t priv);

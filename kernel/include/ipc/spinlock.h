@@ -1,7 +1,7 @@
 #ifndef KERNEL_IPC_SPINLOCK_H
 #define KERNEL_IPC_SPINLOCK_H
 
-#include "proc.h"
+#include "proc/proc.h"
 #include <stdatomic.h>
 
 typedef struct {

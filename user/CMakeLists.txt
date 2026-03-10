@@ -32,6 +32,10 @@ add_custom_target(user_linker_script_preprocess
 add_executable(user_main)
 target_sources(user_main PRIVATE ${C_SRCS})
 target_include_directories(user_main PRIVATE )
-target_link_libraries(user_main PRIVATE klibc)
+target_link_libraries(user_main PRIVATE libc)
 target_link_options(user_main PRIVATE -T ${USER_LINKER_FILE})
 add_dependencies(user_main user_linker_script_preprocess sysroot_headers)
+
+set(LIBC_NAME libc)
+set(LIBC_COMPILE_DEFINITIONS )
+add_subdirectory(../libc libc)

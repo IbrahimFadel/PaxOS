@@ -52,6 +52,5 @@ add_custom_command(
 )
 add_custom_target(sysroot_headers DEPENDS ${CMAKE_BINARY_DIR}/headers.stamp)
 
-add_subdirectory(libc)
 add_subdirectory(kernel)
 add_subdirectory(user)

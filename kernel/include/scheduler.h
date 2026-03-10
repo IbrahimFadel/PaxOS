@@ -1,7 +1,7 @@
 #ifndef KERNEL_SCHEDULER_H
 #define KERNEL_SCHEDULER_H
 
-#include "proc.h"
+#include "proc/proc.h"
 
 extern proc_t *current_proc;
 

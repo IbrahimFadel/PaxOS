@@ -4,7 +4,7 @@
 #include "interrupts/irq.h"
 #include "logging/logging.h"
 #include "pic.h"
-#include "proc.h"
+#include "proc/proc.h"
 #include "tasks/idle.h"
 #include "tasks/task1.h"
 #include "tasks/task2.h"

@@ -1,5 +1,5 @@
 #include "syscall/exit.h"
-#include "proc.h"
+#include "proc/proc.h"
 #include "scheduler.h"
 
 void sys_exit(int code) {
