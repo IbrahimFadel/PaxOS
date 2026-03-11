@@ -47,7 +47,9 @@ proc_t *elf_load(void *elf_data, uint32_t size) {
 
     for (uint32_t va = va_start; va < va_end; va += PAGE_SIZE) {
       void *page_phys = pmm_alloc_page();
+      assert(page_phys);
       void *page_va = vmm_pa_to_va(page_phys);
+      assert((uint32_t)page_va < 0xFF000000);
       memset(page_va, 0x0, PAGE_SIZE);
       printf("7\n");
 

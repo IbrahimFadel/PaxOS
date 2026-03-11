@@ -57,25 +57,26 @@ void kmain(uint32_t mb2_magic, uint32_t mbi_pa) {
   kmem_init();
   scheduler_init();
 
-  // proc_t *kproc1 = process_create(task1, PRIV_KERNEL);
-  // assert(kproc1);
+  proc_t *kproc1 = process_create(task1, PRIV_KERNEL);
+  assert(kproc1);
 
-  // proc_t *kproc2 = process_create(task2, PRIV_KERNEL);
-  // assert(kproc2);
+  proc_t *kproc2 = process_create(task2, PRIV_KERNEL);
+  assert(kproc2);
 
-  // scheduler_add(kproc1);
-  // scheduler_add(kproc2);
+  scheduler_add(kproc1);
+  scheduler_add(kproc2);
 
-  ramfs_init();
-  initrd_load(boot_info.initrd_module.mod_start, boot_info.initrd_module.mod_end);
-  ramfs_file_t *f = ramfs_find("./hello_world_write");
-  if (f) {
-    proc_t *proc = elf_load(f->data, f->size);
-    assert(proc);
-    scheduler_add(proc);
-  } else {
-    LOGE("could not find ELF\n");
-  }
+  // ramfs_init();
+  // initrd_load(boot_info.initrd_module.mod_start, boot_info.initrd_module.mod_end);
+  // ramfs_file_t *f = ramfs_find("./hello_world_write");
+  // if (f) {
+  //   proc_t *proc = elf_load(f->data, f->size);
+  //   assert(proc);
+  //   LOGI("adding to scheduler\n");
+  //   scheduler_add(proc);
+  // } else {
+  //   LOGE("could not find ELF\n");
+  // }
 
   for (;;) {}
 }
