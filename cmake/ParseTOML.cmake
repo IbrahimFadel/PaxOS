@@ -58,7 +58,5 @@ function(toml_to_compile_definitions TOML_FILE OUT_VAR)
         endif()
     endforeach()
     
-    message("Definitions: ${DEFS}")
-
     set(${OUT_VAR} "${DEFS}" PARENT_SCOPE)
 endfunction()

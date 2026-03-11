@@ -23,6 +23,7 @@ add_library(${LIBC_NAME} STATIC
     string/memmove.c
     string/memset.c
     string/strcmp.c
+    string/strncmp.c
     string/strcpy.c
     string/strlen.c
     string/strncpy.c

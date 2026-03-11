@@ -14,6 +14,7 @@ extern "C" {
   void *memset(void *, int, size_t);
   size_t strlen(const char *);
   int strcmp(const char *s1, const char *s2);
+  int strncmp(const char *s1, const char *s2, size_t n);
   char *strcpy(char *destination, const char *source);
   char *strncpy(char *destination, const char *source, size_t num);
   size_t strnlen(const char *s, size_t maxlen);
