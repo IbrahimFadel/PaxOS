@@ -24,6 +24,7 @@ fd_t ramfs_create(const char *name, uint8_t *data, uint32_t size) {
 ramfs_file_t *ramfs_find(const char *name) {
   for (int i = 0; i < KCONFIG_RAMFS_MAX_NUM_FILES; i++) {
     if (!files[i].used) continue;
+    LOGI("%s vs %s\n", files[i].name, name);
     if (strncmp(files[i].name, name, KCONFIG_RAMFS_MAX_NAME_LEN) == 0) {
       LOGD("ramfs_find: found %s\n", name);
       return &files[i];
