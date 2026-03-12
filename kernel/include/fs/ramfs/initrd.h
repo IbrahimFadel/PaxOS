@@ -35,7 +35,7 @@ typedef struct {
   char filename_prefix[155];
 } ustar_header_t;
 
-void initrd_load(uint32_t phys_start, uint32_t phys_end);
+void initrd_load(void *base, uint32_t total_size);
 int oct2bin(char *str, int size);
 
 #endif

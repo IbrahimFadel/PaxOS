@@ -93,8 +93,8 @@ typedef struct {
 typedef struct {
   uint32_t mod_start;
   uint32_t mod_end;
-  uint8_t cmdline[0];
-} multiboot2_tag_module_t;
+  uint8_t str[0];
+} multiboot2_tag_modules_t;
 
 typedef struct {
   uint32_t num;
@@ -187,7 +187,6 @@ typedef struct {
     multiboot2_tag_basic_mem_info_t basic_mem_info;
     multiboot2_tag_bios_boot_dev_t bios_boot_dev;
     multiboot2_tag_boot_command_line_t boot_cmd_line;
-    multiboot2_tag_module_t module;
     multiboot2_tag_elf_symbols_t elf_symbols;
     multiboot2_tag_mem_map_t mem_map;
     multiboot2_tag_bootloader_name_t bootloader_name;
@@ -208,7 +207,6 @@ typedef struct {
   char bootloader_name[BOOTLOADER_NAME_MAX_LEN];
   multiboot2_tag_mem_map_entry_t *mmap_entries;
   int num_mmap_entries;
-  multiboot2_tag_module_t initrd_module;
 } boot_info_t;
 
 const char *multiboot2_mmap_type_to_str(multiboot2_mmap_entry_type_t mmap_type);

@@ -12,7 +12,6 @@ typedef struct {
   bool used;
 } ramfs_file_t;
 
-void ramfs_init(void);
 fd_t ramfs_create(const char *name, uint8_t *data, uint32_t size);
 ramfs_file_t *ramfs_find(const char *name);
 

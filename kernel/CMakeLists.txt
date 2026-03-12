@@ -76,3 +76,37 @@ add_custom_target(iso
 	BYPRODUCTS ${CMAKE_SOURCE_DIR}/iso/boot
 	COMMENT "Generating bootable ISO"
 )
+
+set(SERIAL_PORT 1234)
+
+add_custom_target(qemu
+	DEPENDS iso
+	USES_TERMINAL
+	COMMAND qemu-system-i386
+			# -s -S
+			-cdrom ${CMAKE_SOURCE_DIR}/build/pax_os.iso 
+			-serial pty
+			-nographic
+)
+
+add_custom_target(qemu-gui
+	DEPENDS iso
+	USES_TERMINAL
+	COMMAND qemu-system-i386
+			# -s -S
+			-cdrom ${CMAKE_SOURCE_DIR}/build/pax_os.iso 
+			-serial pty
+)
+
+add_custom_target(debug
+	DEPENDS iso
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	USES_TERMINAL
+	COMMAND bochs
+)
+
+set_property(
+	TARGET iso
+	APPEND
+	PROPERTY ADDITIONAL_CLEAN_FILES ${CMAKE_SOURCE_DIR}/iso/boot/
+)
