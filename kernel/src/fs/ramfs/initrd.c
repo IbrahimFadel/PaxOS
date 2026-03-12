@@ -2,13 +2,15 @@
 #include "fs/ramfs/ramfs.h"
 #include "mem/kmalloc.h"
 #include "logging/logging.h"
+#include "mem/vmm.h"
 #include "utils.h"
 #include <stdint.h>
 #include <string.h>
 
-void initrd_load(void *base, uint32_t total_size) {
-  uint8_t *ptr = base;
-  uint8_t *end = ptr + total_size;
+void initrd_load(uint32_t phys_start, uint32_t phys_end) {
+  LOGD("initrd_load: start = 0x%x, end = 0x%x\n", phys_start, phys_end);
+  uint8_t *ptr = vmm_pa_to_va((void *)phys_start);
+  uint8_t *end = vmm_pa_to_va((void *)phys_end);
 
   while (ptr < end) {
     ustar_header_t *hdr = (ustar_header_t *)ptr;

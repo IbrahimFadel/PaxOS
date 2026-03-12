@@ -16,6 +16,7 @@ proc_t *elf_load(void *elf_data, uint32_t size) {
   assert(size >= ehdr->phoff + ehdr->phnum * sizeof(elf32_phdr_t));
 
   proc_t *proc = process_create_user(NULL);
+  assert(proc);
 
   user_entry_frame_t *frame = (user_entry_frame_t *)((uint8_t *)proc->ctx + sizeof(proc_context_t)
                                                      + sizeof(uint32_t) // proc_enter_userspace

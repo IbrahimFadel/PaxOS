@@ -53,7 +53,11 @@ void multiboot2_info_parse(boot_info_t *boot_info, const multiboot2_boot_info_t 
       strncpy(boot_info->bootloader_name, (const char *)tag->bootloader_name.str,
               BOOTLOADER_NAME_MAX_LEN);
       break;
-    case MULTIBOOT2_TAG_MODULES:          break;
+    case MULTIBOOT2_TAG_MODULES: {
+      multiboot2_tag_module_t mod = (multiboot2_tag_module_t)tag->module;
+      memcpy(&boot_info->initrd_module, &mod, sizeof(multiboot2_tag_module_t));
+      break;
+    }
     case MULTIBOOT2_TAG_BASIC_MEM_INFO:   break;
     case MULTIBOOT2_TAG_BIOS_BOOT_DEVICE: break;
     case MULTIBOOT2_TAG_MEM_MAP:          {
